@@ -33,6 +33,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend-dev:
+        condition: service_healthy
+    env_file:
+      - ./frontend/.env.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db-data-dev:
