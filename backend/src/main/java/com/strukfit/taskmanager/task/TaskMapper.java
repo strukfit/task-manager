@@ -2,13 +2,14 @@ package com.strukfit.taskmanager.task;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 
 import com.strukfit.taskmanager.task.dto.TaskCreateDTO;
 import com.strukfit.taskmanager.task.dto.TaskResponseDTO;
 import com.strukfit.taskmanager.task.dto.TaskUpdateDTO;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TaskMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "completed", constant = "false")

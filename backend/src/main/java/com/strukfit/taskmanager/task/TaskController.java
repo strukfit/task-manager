@@ -21,7 +21,7 @@ import com.strukfit.taskmanager.task.dto.TaskUpdateDTO;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/v1/tasks")
 public class TaskController {
     @Autowired
     private TaskService taskService;
@@ -46,7 +46,8 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<TaskResponseDTO>> updateTask(@PathVariable Long id, @Valid @RequestBody TaskUpdateDTO dto) {
+    public ResponseEntity<ApiResponse<TaskResponseDTO>> updateTask(@PathVariable Long id,
+            @Valid @RequestBody TaskUpdateDTO dto) {
         try {
             TaskResponseDTO updatedTask = taskService.updateTask(id, dto);
             return ResponseEntity.ok(ApiResponse.success(updatedTask));
