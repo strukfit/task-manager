@@ -7,14 +7,22 @@ import { useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-export function AuthForm({ className, ...props }: React.ComponentProps<'div'>) {
-  const [isSignup, setIsSignup] = useState(false);
+interface AuthFormProps extends React.ComponentProps<'div'> {
+  type?: 'login' | 'signup';
+}
+
+export function AuthForm({
+  type = 'login',
+  className,
+  ...props
+}: AuthFormProps) {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
   });
   const navigate = useNavigate();
+  const isSignup = type === 'signup';
 
   const { login, signup } = useAuth();
 
@@ -33,7 +41,7 @@ export function AuthForm({ className, ...props }: React.ComponentProps<'div'>) {
             username: formData.username,
             password: formData.password,
           });
-      navigate('/home');
+      navigate('/workspaces');
     } catch (e) {
       const error = e as Error;
       toast(error.message || 'An error occurred');
@@ -51,7 +59,9 @@ export function AuthForm({ className, ...props }: React.ComponentProps<'div'>) {
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username" className="mb-1">
+              Username
+            </Label>
             <Input
               id="username"
               name="username"
@@ -63,7 +73,9 @@ export function AuthForm({ className, ...props }: React.ComponentProps<'div'>) {
           </div>
           {isSignup && (
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="mb-1">
+                Email
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -76,7 +88,9 @@ export function AuthForm({ className, ...props }: React.ComponentProps<'div'>) {
             </div>
           )}
           <div>
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="mb-1">
+              Password
+            </Label>
             <Input
               id="password"
               name="password"
@@ -88,7 +102,7 @@ export function AuthForm({ className, ...props }: React.ComponentProps<'div'>) {
             />
           </div>
           <Button type="submit" className="w-full">
-            {isSignup ? 'Register' : 'Login'}
+            {isSignup ? 'Sign up' : 'Login'}
           </Button>
         </form>
         <div className="flex items-center justify-center gap-2">
@@ -97,7 +111,7 @@ export function AuthForm({ className, ...props }: React.ComponentProps<'div'>) {
           </span>
           <Button
             variant="link"
-            onClick={() => setIsSignup(prev => !prev)}
+            onClick={() => navigate(isSignup ? '/login' : '/signup')}
             className="p-0 h-auto text-sm"
           >
             {isSignup ? 'Log in' : 'Sign up'}
