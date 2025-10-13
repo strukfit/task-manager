@@ -6,7 +6,8 @@ export const BASE_URL = `${normalizedBase}/api/v1`;
 export const API_ROUTES = {
   auth: {
     login: '/auth/login',
-    logout: '/auth/logout',
+    signup: '/auth/signup',
+    refresh: '/auth/refresh',
   },
   tasks: '/tasks',
 } as const;

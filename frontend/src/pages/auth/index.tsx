@@ -1,0 +1,19 @@
+import AuthForm from '@/components/auth/AuthForm';
+import { useAuth } from '@/hooks/use-auth';
+import { Navigate } from 'react-router';
+
+export default function Page() {
+  const { user } = useAuth();
+
+  if (user) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return (
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <AuthForm />
+      </div>
+    </div>
+  );
+}
