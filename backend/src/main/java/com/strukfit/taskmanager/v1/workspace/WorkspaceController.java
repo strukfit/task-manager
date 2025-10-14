@@ -45,6 +45,14 @@ public class WorkspaceController {
         return ResponseEntity.ok(ApiResponse.success(workspaces));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<WorkspaceDTO>> getById(@PathVariable Long id) {
+        User user = securityUtils.getCurrentUser();
+        Workspace entity = workspaceService.getById(id, user);
+        WorkspaceDTO workspace = workspaceMapper.toDTO(entity);
+        return ResponseEntity.ok(ApiResponse.success(workspace));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<WorkspaceDTO>> create(@Valid @RequestBody WorkspaceCreateDTO dto) {
         User user = securityUtils.getCurrentUser();

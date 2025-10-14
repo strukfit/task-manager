@@ -1,4 +1,4 @@
-import AuthForm from '@/components/auth/AuthForm';
+import AuthForm from '@/components/auth/auth-form';
 import { useAuth } from '@/hooks/use-auth';
 import { Navigate } from 'react-router';
 

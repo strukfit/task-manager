@@ -11,7 +11,11 @@ export const useAuth = () => {
 
   const [user, setUser] = useState<User | undefined>(() => {
     const storedUser = localStorage.getItem('user');
-    return storedUser ? (JSON.parse(storedUser) as User) : undefined;
+    const storedAccessToken = localStorage.getItem('accessToken');
+    const storedRefreshToken = localStorage.getItem('refreshToken');
+    return storedUser && storedAccessToken && storedRefreshToken
+      ? (JSON.parse(storedUser) as User)
+      : undefined;
   });
 
   const logout = useCallback(() => {

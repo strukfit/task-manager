@@ -9,5 +9,7 @@ export const API_ROUTES = {
     signup: '/auth/signup',
     refresh: '/auth/refresh',
   },
-  tasks: '/tasks',
+  workspaces: {
+    workspaces: '/workspaces',
+  },
 } as const;

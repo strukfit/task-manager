@@ -1,12 +1,13 @@
 import { ApiError, ApiResponse } from '@/types/common';
 import apiClient from './api-client';
 import { API_ROUTES } from '@/constants/api';
-import { AuthResponse } from '@/schemas/auth';
+import {
+  AuthResponse,
+  LoginCreditentials,
+  SignupCreditentials,
+} from '@/schemas/auth';
 
-export const login = async (creditentials: {
-  username: string;
-  password: string;
-}) => {
+export const login = async (creditentials: LoginCreditentials) => {
   try {
     const response = await apiClient.post<ApiResponse<AuthResponse>>(
       API_ROUTES.auth.login,
@@ -19,11 +20,7 @@ export const login = async (creditentials: {
   }
 };
 
-export const signup = async (creditentials: {
-  username: string;
-  email: string;
-  password: string;
-}) => {
+export const signup = async (creditentials: SignupCreditentials) => {
   try {
     const response = await apiClient.post<ApiResponse<AuthResponse>>(
       API_ROUTES.auth.signup,

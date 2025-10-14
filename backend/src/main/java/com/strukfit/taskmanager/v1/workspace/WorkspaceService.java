@@ -22,6 +22,15 @@ public class WorkspaceService {
         return workspaceRepository.findByUser(user);
     }
 
+    public Workspace getById(Long id, User user) {
+        Workspace workspace = workspaceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Workspace not found"));
+        if (!workspace.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized");
+        }
+        return workspace;
+    }
+
     public Workspace create(WorkspaceCreateDTO dto, User user) {
         Workspace workspace = new Workspace();
         BeanUtils.copyProperties(dto, workspace);
@@ -30,21 +39,13 @@ public class WorkspaceService {
     }
 
     public Workspace update(Long id, WorkspaceUpdateDTO dto, User user) {
-        Workspace workspace = workspaceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Workspace not found"));
-        if (!workspace.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized");
-        }
+        Workspace workspace = getById(id, user);
         workspaceMapper.updateWorkspaceFromDTO(dto, workspace);
         return workspaceRepository.save(workspace);
     }
 
     public void delete(Long id, User user) {
-        Workspace workspace = workspaceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Workspace not found"));
-        if (!workspace.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized");
-        }
+        Workspace workspace = getById(id, user);
         workspaceRepository.delete(workspace);
     }
 }

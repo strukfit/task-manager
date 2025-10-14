@@ -29,7 +29,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        const response = await apiClient.post(
+        const response = await axios.post(
           API_ROUTES.auth.refresh,
           { refreshToken },
           {
@@ -42,8 +42,7 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalRequest);
       } catch (error) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        localStorage.clear();
         location.href = '/login';
         throw error;
       }

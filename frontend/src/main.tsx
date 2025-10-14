@@ -9,7 +9,8 @@ import { Toaster } from './components/ui/sonner';
 import Home from './pages/home';
 import Workspaces from './pages/workspaces';
 import AuthPage from './pages/auth';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import WorkspaceFormPage from './pages/workspaces/workspace-form';
+import { ProtectedRoute } from './components/auth/protected-route';
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,12 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/signup" element={<AuthPage type="signup" />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/workspaces" element={<Workspaces />} />
+            <Route path="/workspaces/create" element={<WorkspaceFormPage />} />
+            <Route
+              path="/workspaces/:workspaceId/edit"
+              element={<WorkspaceFormPage />}
+            />
+            {/* <Route path="/workspaces/:workspaceId" element={<Board />} /> */}
           </Route>
         </Routes>
       </BrowserRouter>
