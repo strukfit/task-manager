@@ -69,6 +69,10 @@ public class IssueService {
                         Collectors.mapping(issueMapper::toDTO, Collectors.toList())));
     }
 
+    public Issue getById(Long id, User user) {
+        return getIssueById(id, user);
+    }
+
     public Issue create(Long workspaceId, IssueCreateDTO dto, User user) {
         Workspace workspace = getWorkspaceById(workspaceId, user);
         Issue issue = new Issue();

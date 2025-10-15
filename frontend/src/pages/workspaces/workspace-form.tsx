@@ -79,10 +79,7 @@ export default function WorkspaceFormPage() {
 
   useEffect(() => {
     if (workspace) {
-      form.reset({
-        name: workspace.name,
-        description: workspace.description || '',
-      });
+      form.reset(workspace);
     }
   }, [workspace, form]);
 

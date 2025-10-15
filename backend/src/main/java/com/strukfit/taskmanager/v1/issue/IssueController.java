@@ -44,6 +44,14 @@ public class IssueController {
         return ResponseEntity.ok(ApiResponse.success(issues));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<IssueDTO>> getById(@PathVariable Long id) {
+        User user = securityUtils.getCurrentUser();
+        Issue entity = issueService.getById(id, user);
+        IssueDTO issue = issueMapper.toDTO(entity);
+        return ResponseEntity.ok(ApiResponse.success(issue));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<IssueDTO>> create(@PathVariable Long workspaceId,
             @RequestBody IssueCreateDTO dto) {

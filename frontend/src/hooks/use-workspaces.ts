@@ -10,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
 export const QUERY_KEYS = {
-  workspaces: ['tasks'],
+  workspaces: ['workspaces'],
   workspacesList: () => [...QUERY_KEYS.workspaces, 'list'],
   workspace: (id: number) => ['workspace', id],
 } as const;

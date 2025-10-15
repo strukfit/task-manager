@@ -9,6 +9,7 @@ import { Toaster } from './components/ui/sonner';
 import Home from './pages/home';
 import Workspaces from './pages/workspaces';
 import AuthPage from './pages/auth';
+import BoardPage from './pages/board';
 import WorkspaceFormPage from './pages/workspaces/workspace-form';
 import { ProtectedRoute } from './components/auth/protected-route';
 
@@ -29,7 +30,7 @@ createRoot(document.getElementById('root')!).render(
               path="/workspaces/:workspaceId/edit"
               element={<WorkspaceFormPage />}
             />
-            {/* <Route path="/workspaces/:workspaceId" element={<Board />} /> */}
+            <Route path="/workspaces/:workspaceId" element={<BoardPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
