@@ -12,22 +12,14 @@ import {
   rectIntersection,
 } from '@dnd-kit/core';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import IssueForm from '@/components/issue/issue-form';
 import { Columns } from '@/types/board';
 import DroppableColumn from '@/components/board/droppable-column';
+import BoardSidebar from '@/components/board/board-sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 export default function Page() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
 
-  const [open, setOpen] = useState(false);
   const [columns, setColumns] = useState<Columns>(
     Object.values(ISSUE_STATUS_COLUMNS).reduce(
       (acc, col) => ({ ...acc, [col.id]: { ...col, issues: [] } }),
@@ -119,43 +111,28 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen mt-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Board</h2>
-        <div className="flex items-center space-x-2">
-          {/* <ProjectFilter workspaceId={workspaceId} onProjectChange={setProjectId} /> */}
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>Create Issue</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create Issue</DialogTitle>
-              </DialogHeader>
-              <IssueForm
-                onSuccess={() => {
-                  setOpen(false);
-                }}
+    <div className="flex flex-col min-h-screen p-8">
+      <SidebarProvider>
+        <BoardSidebar activeMenuItem={location.pathname} />
+        {/* <div className="flex justify-start items-start mb-4">
+          <ProjectFilter workspaceId={workspaceId} onProjectChange={setProjectId} />
+        </div> */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={rectIntersection}
+          onDragEnd={onDragEnd}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
+            {Object.entries(columns).map(([columnId, column]) => (
+              <DroppableColumn
+                key={columnId}
+                columnId={columnId}
+                column={column}
               />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={rectIntersection}
-        onDragEnd={onDragEnd}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
-          {Object.entries(columns).map(([columnId, column]) => (
-            <DroppableColumn
-              key={columnId}
-              columnId={columnId}
-              column={column}
-            />
-          ))}
-        </div>
-      </DndContext>
+            ))}
+          </div>
+        </DndContext>
+      </SidebarProvider>
     </div>
   );
 }
