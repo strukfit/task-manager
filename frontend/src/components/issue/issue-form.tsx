@@ -36,6 +36,9 @@ interface IssueFormProps {
   onSuccess: () => void;
 }
 
+const ISSUE_PROPERTIES = Object.entries(ISSUE_PRIORITY_LABELS);
+const ISSUE_STATUSES = Object.entries(ISSUE_STATUS_LABELS);
+
 export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const { issue, isLoading: issueLoading } = useIssueById(
@@ -56,9 +59,6 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
       projectId: undefined as number | undefined,
     },
   });
-
-  const issuePriorities = Object.entries(ISSUE_PRIORITY_LABELS);
-  const issueStatuses = Object.entries(ISSUE_STATUS_LABELS);
 
   useEffect(() => {
     if (issueId && issue) {
@@ -120,33 +120,30 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
         <FormField
           control={form.control}
           name="priority"
-          render={({ field }) => {
-            console.log(field);
-            return (
-              <FormItem key={field.name}>
-                <FormLabel>Priority</FormLabel>
-                <Select
-                  key={field.value}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Priority" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {issuePriorities.map(([key, value]) => (
-                      <SelectItem key={key} value={key}>
-                        {value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
+          render={({ field }) => (
+            <FormItem key={field.name}>
+              <FormLabel>Priority</FormLabel>
+              <Select
+                key={field.value}
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Priority" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {ISSUE_PROPERTIES.map(([key, value]) => (
+                    <SelectItem key={key} value={key}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
         />
         <FormField
           control={form.control}
@@ -165,7 +162,7 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {issueStatuses.map(([key, value]) => (
+                  {ISSUE_STATUSES.map(([key, value]) => (
                     <SelectItem key={key} value={key}>
                       {value}
                     </SelectItem>

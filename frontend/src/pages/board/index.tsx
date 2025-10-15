@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ISSUE_STATUS_COLUMNS, IssueStatus } from '@/constants/issue';
 import { useIssues } from '@/hooks/use-issues';
 import { useEffect, useState } from 'react';
@@ -6,18 +5,14 @@ import { useParams } from 'react-router';
 
 import {
   DndContext,
-  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
   DragEndEvent,
+  closestCorners,
+  closestCenter,
+  rectIntersection,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import SortableIssue from '@/components/issue/sortable-issue';
-import { Issue } from '@/schemas/issue';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,14 +23,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import IssueForm from '@/components/issue/issue-form';
-
-interface Column {
-  id: IssueStatus;
-  name: string;
-  issues: Issue[];
-}
-
-type Columns = Record<IssueStatus, Column>;
+import { Columns } from '@/types/board';
+import DroppableColumn from '@/components/board/droppable-column';
 
 export default function Page() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -77,14 +66,19 @@ export default function Page() {
   const onDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over) return;
-
-    const activeId = active.id;
+    const activeId = active.id.toString();
     const activeContainer = active.data.current?.sortable
       .containerId as IssueStatus;
-    const overId = over.id;
-    const overContainer = (over.data.current?.sortable.containerId ||
-      over.id) as IssueStatus;
+
+    let overContainer: IssueStatus;
+    if (over) {
+      overContainer = (over.data.current?.sortable.containerId ||
+        over.id) as IssueStatus;
+    } else {
+      const collisions = event.collisions;
+      if (!collisions || collisions.length <= 0) return;
+      overContainer = collisions[0].id as IssueStatus;
+    }
 
     if (activeContainer === overContainer) return;
 
@@ -93,15 +87,13 @@ export default function Page() {
     );
     if (!activeIssue) return;
 
-    let overIndex = columns[overContainer].issues.length; // append by default
-
-    if (overId && overId !== activeId) {
+    let overIndex = columns[overContainer].issues.length;
+    if (over && over.id.toString() !== activeId) {
       overIndex = columns[overContainer].issues.findIndex(
-        issue => issue.id.toString() === overId
+        issue => issue.id.toString() === over.id.toString()
       );
     }
 
-    // Optimistic update
     const sourceIssues = [...columns[activeContainer].issues];
     const destIssues = [...columns[overContainer].issues];
     const sourceIndex = sourceIssues.findIndex(
@@ -124,11 +116,12 @@ export default function Page() {
     } catch (err) {
       const error = err as Error;
       toast(error.message || 'Failed to update issue');
+      setColumns(columns);
     }
   };
 
   return (
-    <div className="mt-8">
+    <div className="flex flex-col min-h-screen mt-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Board</h2>
         <div className="flex items-center space-x-2">
@@ -150,36 +143,18 @@ export default function Page() {
           </Dialog>
         </div>
       </div>
-      {/* {error && <p className="text-red-500 mb-4">{error}</p>} */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={rectIntersection}
         onDragEnd={onDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
           {Object.entries(columns).map(([columnId, column]) => (
-            <div key={columnId}>
-              <Card className="bg-gray-50">
-                <CardHeader>
-                  <CardTitle>{column.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SortableContext
-                    id={columnId}
-                    items={column.issues.map(i => i.id.toString())}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {column.issues.map(issue => (
-                      <SortableIssue
-                        key={issue.id.toString()}
-                        id={issue.id.toString()}
-                        issue={issue}
-                      />
-                    ))}
-                  </SortableContext>
-                </CardContent>
-              </Card>
-            </div>
+            <DroppableColumn
+              key={columnId}
+              columnId={columnId}
+              column={column}
+            />
           ))}
         </div>
       </DndContext>
