@@ -45,6 +45,14 @@ public class ProjectController {
         return ResponseEntity.ok(ApiResponse.success(projects));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ProjectDTO>> getById(@PathVariable Long workspaceId, @PathVariable Long id) {
+        User user = securityUtils.getCurrentUser();
+        Project entity = projectService.getById(workspaceId, id, user);
+        ProjectDTO project = projectMapper.toDTO(entity);
+        return ResponseEntity.ok(ApiResponse.success(project));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ProjectDTO>> create(@PathVariable Long workspaceId,
             @Valid @RequestBody ProjectCreateDTO dto) {

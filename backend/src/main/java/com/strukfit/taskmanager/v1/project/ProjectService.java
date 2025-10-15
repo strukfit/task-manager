@@ -31,9 +31,26 @@ public class ProjectService {
         return workspace;
     }
 
+    private Project getProjectById(Long workspaceId, Long projectId, User user) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+        if (!project.getWorkspace().getId().equals(workspaceId)) {
+            throw new RuntimeException("Project does not belong to workspace");
+        }
+        Workspace workspace = project.getWorkspace();
+        if (!workspace.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized");
+        }
+        return project;
+    }
+
     public List<Project> getByWorkspace(Long wokspaceId, User user) {
         Workspace workspace = getWorkspaceById(wokspaceId, user);
         return projectRepository.findByWorkspace(workspace);
+    }
+
+    public Project getById(Long workspaceId, Long projectId, User user) {
+        return getProjectById(workspaceId, projectId, user);
     }
 
     public Project create(Long wokspaceId, ProjectCreateDTO dto, User user) {
@@ -45,23 +62,13 @@ public class ProjectService {
     }
 
     public Project update(Long workspaceId, Long projectId, ProjectUpdateDTO dto, User user) {
-        getWorkspaceById(workspaceId, user);
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
-        if (!project.getWorkspace().getId().equals(workspaceId)) {
-            throw new RuntimeException("Project does not belong to workspace");
-        }
+        Project project = getProjectById(workspaceId, projectId, user);
         projectMapper.updateProjectFromDTO(dto, project);
         return projectRepository.save(project);
     }
 
     public void delete(Long workspaceId, Long projectId, User user) {
-        getWorkspaceById(workspaceId, user);
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
-        if (!project.getWorkspace().getId().equals(workspaceId)) {
-            throw new RuntimeException("Project does not belong to workspace");
-        }
+        Project project = getProjectById(workspaceId, projectId, user);
         projectRepository.delete(project);
     }
 }
