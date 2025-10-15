@@ -14,8 +14,7 @@ import {
 import { toast } from 'sonner';
 import { Columns } from '@/types/board';
 import DroppableColumn from '@/components/board/droppable-column';
-import BoardSidebar from '@/components/board/board-sidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import BoardShell from '@/components/board/board-shell';
 
 export default function Page() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -111,9 +110,8 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-8">
-      <SidebarProvider>
-        <BoardSidebar activeMenuItem={location.pathname} />
+    <BoardShell>
+      <div className="flex flex-col min-h-screen p-4">
         {/* <div className="flex justify-start items-start mb-4">
           <ProjectFilter workspaceId={workspaceId} onProjectChange={setProjectId} />
         </div> */}
@@ -132,7 +130,7 @@ export default function Page() {
             ))}
           </div>
         </DndContext>
-      </SidebarProvider>
-    </div>
+      </div>
+    </BoardShell>
   );
 }

@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from '../ui/sidebar';
 import { Link, useParams } from 'react-router';
 import {
@@ -53,23 +54,30 @@ export default function BoardSidebar({
   const { logout } = useAuth();
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const { workspace } = useWorkspaceById(Number(workspaceId));
+  const { state } = useSidebar();
 
   if (!workspace) return null;
 
+  const isExpanded = state === 'expanded';
+
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b px-6 py-3 flex flex-row items-center justify-between">
+      <SidebarHeader
+        className={`border-b flex flex-row items-center justify-between ${isExpanded ? 'px-6 py-3' : ''}`}
+      >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center justify-start max-w-[70%]"
+              className={`flex ${isExpanded ? 'max-w-[70%]' : 'max-w-[100%]'}`}
             >
               <Building2 className="h-4 w-4" />
-              <span className="text-sm font-semibold truncate">
-                {workspace.name}
-              </span>
-              <ChevronDown className="h-4 w-4" />
+              {isExpanded && (
+                <span className="text-sm font-semibold truncate">
+                  {workspace.name}
+                </span>
+              )}
+              {isExpanded && <ChevronDown className="h-4 w-4" />}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
@@ -82,18 +90,20 @@ export default function BoardSidebar({
             <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <CreateIssueDialog
-          trigger={
-            <Button>
-              <SquarePen className="h-4 w-4 shrink-0" />
-            </Button>
-          }
-        />
+        {isExpanded && (
+          <CreateIssueDialog
+            trigger={
+              <Button>
+                <SquarePen className="h-4 w-4 shrink-0" />
+              </Button>
+            }
+          />
+        )}
       </SidebarHeader>
       <SidebarContent>
         {navItems.map(group => (
           <SidebarGroup key={group.title}>
-            <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+            {isExpanded && <SidebarGroupLabel>{group.title}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map(item => (
@@ -102,7 +112,13 @@ export default function BoardSidebar({
                       asChild
                       isActive={props.activeMenuItem === item.url(workspace.id)}
                     >
-                      <Link to={item.url(workspace.id)}>{item.title}</Link>
+                      <Link
+                        to={item.url(workspace.id)}
+                        className="flex items-center"
+                      >
+                        {item.icon}
+                        {isExpanded && <span>{item.title}</span>}
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
