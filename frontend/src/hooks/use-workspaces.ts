@@ -27,8 +27,8 @@ export const useWorkspaces = () => {
 
   const createWorkspaceMutation = useMutation({
     mutationFn: createWorkspace,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workspaces });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workspaces });
     },
   });
 
@@ -82,10 +82,10 @@ export const useWorkspaces = () => {
         );
       }
     },
-    onSettled: updatedWorkspace => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workspaces });
+    onSettled: async updatedWorkspace => {
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workspaces });
       if (updatedWorkspace) {
-        queryClient.invalidateQueries({
+        await queryClient.invalidateQueries({
           queryKey: QUERY_KEYS.workspace(updatedWorkspace.id!),
         });
       }
@@ -120,8 +120,8 @@ export const useWorkspaces = () => {
         );
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workspaces });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workspaces });
     },
   });
 

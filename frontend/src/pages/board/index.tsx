@@ -9,8 +9,6 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-  closestCorners,
-  closestCenter,
   rectIntersection,
 } from '@dnd-kit/core';
 import { toast } from 'sonner';

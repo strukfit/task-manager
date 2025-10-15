@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWorkspaces } from '@/hooks/use-workspaces';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 export default function WorkspaceList() {
   const { data: workspaces, isLoading: loading, error } = useWorkspaces();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
@@ -28,12 +29,18 @@ export default function WorkspaceList() {
                   {workspace.description || 'No description'}
                 </p>
                 <div className="mt-4 flex justify-between">
-                  <Link to={`/workspaces/${workspace.id}`}>
-                    <Button variant="outline">View</Button>
-                  </Link>
-                  <Link to={`/workspaces/${workspace.id}/edit`}>
-                    <Button variant="outline">Edit</Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/workspaces/${workspace.id}`)}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate(`/workspaces/${workspace.id}/edit`)}
+                  >
+                    Edit
+                  </Button>
                 </div>
               </CardContent>
             </Card>
