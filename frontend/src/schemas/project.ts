@@ -11,3 +11,13 @@ export const projectSchema = z.object({
     .max(255, 'Description must be 255 characters or less')
     .optional(),
 });
+
+export const createProjectSchema = projectSchema.omit({ id: true });
+export const editProjectSchema = projectSchema;
+
+export const projectsResponseSchema = z.array(projectSchema);
+
+export type ProjectsResponse = z.infer<typeof projectsResponseSchema>;
+export type Project = z.infer<typeof projectSchema>;
+export type ProjectCreate = z.infer<typeof createProjectSchema>;
+export type ProjectEdit = z.infer<typeof editProjectSchema>;

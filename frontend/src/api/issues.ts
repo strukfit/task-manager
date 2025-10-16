@@ -3,12 +3,18 @@ import apiClient from './api-client';
 import { API_ROUTES } from '@/constants/api';
 import { Issue, IssueCreate, IssueEdit, IssuesResponse } from '@/schemas/issue';
 
+export type GetIssuesParams = {
+  projectId?: number;
+};
+
 export const getIssues = async (
-  workspaceId: number
+  workspaceId: number,
+  params?: GetIssuesParams
 ): Promise<IssuesResponse> => {
   try {
     const response = await apiClient.get<ApiResponse<IssuesResponse>>(
-      API_ROUTES.issues.issues(workspaceId)
+      API_ROUTES.issues.issues(workspaceId),
+      { params }
     );
     return response.data.data;
   } catch (error) {
@@ -83,7 +89,7 @@ export const deleteIssue = async (
   } catch (error) {
     const axiosError = error as ApiError;
     throw new Error(
-      axiosError.response?.data?.message || 'Failed to fetch workspace'
+      axiosError.response?.data?.message || 'Failed to delete issue'
     );
   }
 };

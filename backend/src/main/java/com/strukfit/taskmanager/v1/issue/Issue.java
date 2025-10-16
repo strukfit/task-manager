@@ -2,6 +2,9 @@ package com.strukfit.taskmanager.v1.issue;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.strukfit.taskmanager.v1.issue.enums.Priority;
 import com.strukfit.taskmanager.v1.issue.enums.Status;
 import com.strukfit.taskmanager.v1.project.Project;
@@ -45,5 +48,6 @@ public class Issue {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Project project;
 }

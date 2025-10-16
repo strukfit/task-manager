@@ -10,11 +10,16 @@ import { Issue, IssueCreate, IssueEdit, IssuesResponse } from '@/schemas/issue';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
+export type IssuesQueryConfig = {
+  projectId?: number;
+};
+
 export const QUERY_KEYS = {
   issues: (workspaceId: number) => ['issues', workspaceId],
-  issuesList: (workspaceId: number) => [
+  issuesList: (workspaceId: number, config: IssuesQueryConfig) => [
     ...QUERY_KEYS.issues(workspaceId),
     'list',
+    config.projectId,
   ],
   issue: (workspaceId: number, id: number) => ['issue', workspaceId, id],
 } as const;
@@ -28,12 +33,13 @@ export const DEFAULT_ISSUES_RESPONSE: IssuesResponse = {
   DUPLICATE: [],
 } as const;
 
-export const useIssues = (workspaceId: number) => {
+export const useIssues = (workspaceId: number, config?: IssuesQueryConfig) => {
+  const { projectId } = config || {};
   const queryClient = useQueryClient();
 
   const issuesQuery = useQuery<IssuesResponse, AxiosError>({
-    queryKey: QUERY_KEYS.issuesList(workspaceId),
-    queryFn: () => getIssues(workspaceId),
+    queryKey: QUERY_KEYS.issuesList(workspaceId, { projectId }),
+    queryFn: () => getIssues(workspaceId, { projectId }),
     staleTime: 1000 * 60 * 5,
     retry: 2,
   });
@@ -46,7 +52,7 @@ export const useIssues = (workspaceId: number) => {
       });
 
       queryClient.setQueryData<IssuesResponse>(
-        QUERY_KEYS.issuesList(workspaceId),
+        QUERY_KEYS.issuesList(workspaceId, { projectId }),
         old => {
           const status: IssueStatus = newIssue.status || 'BACKLOG';
           if (!old) {
@@ -72,7 +78,7 @@ export const useIssues = (workspaceId: number) => {
       });
 
       const previousIssues = queryClient.getQueryData<IssuesResponse>(
-        QUERY_KEYS.issuesList(workspaceId)
+        QUERY_KEYS.issuesList(workspaceId, { projectId })
       );
       const previousIssue = queryClient.getQueryData<Issue>(
         QUERY_KEYS.issue(workspaceId, updatedIssue.id!)
@@ -83,7 +89,7 @@ export const useIssues = (workspaceId: number) => {
         const newStatus: IssueStatus = updatedIssue.status || oldStatus;
 
         queryClient.setQueryData<IssuesResponse>(
-          QUERY_KEYS.issuesList(workspaceId),
+          QUERY_KEYS.issuesList(workspaceId, { projectId }),
           old => {
             if (!old) return old;
             const updatedIssues = { ...old };
@@ -112,7 +118,7 @@ export const useIssues = (workspaceId: number) => {
     onError: (_err, variables, context) => {
       if (context?.previousIssues) {
         queryClient.setQueryData(
-          QUERY_KEYS.issuesList(workspaceId),
+          QUERY_KEYS.issuesList(workspaceId, { projectId }),
           context.previousIssues
         );
       }
@@ -143,12 +149,12 @@ export const useIssues = (workspaceId: number) => {
       });
 
       const previousIssues = queryClient.getQueryData<IssuesResponse>(
-        QUERY_KEYS.issuesList(workspaceId)
+        QUERY_KEYS.issuesList(workspaceId, { projectId })
       );
 
       if (previousIssues) {
         queryClient.setQueryData<IssuesResponse>(
-          QUERY_KEYS.issuesList(workspaceId),
+          QUERY_KEYS.issuesList(workspaceId, { projectId }),
           old => {
             if (!old) return old;
             const updatedIssues = { ...old };
@@ -173,7 +179,7 @@ export const useIssues = (workspaceId: number) => {
     onError: (_err, _variables, context) => {
       if (context?.previousIssues) {
         queryClient.setQueryData(
-          QUERY_KEYS.issuesList(workspaceId),
+          QUERY_KEYS.issuesList(workspaceId, { projectId }),
           context.previousIssues
         );
       }

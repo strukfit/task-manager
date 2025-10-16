@@ -15,4 +15,7 @@ export const API_ROUTES = {
   issues: {
     issues: (workspaceId: number) => `workspaces/${workspaceId}/issues`,
   },
+  projects: {
+    projects: (workspaceId: number) => `workspaces/${workspaceId}/projects`,
+  },
 } as const;
