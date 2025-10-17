@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import BoardShell from '@/components/board/board-shell';
 import IssuesBoard from '@/components/issue/issues-board';
@@ -11,14 +11,15 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useProjectById, useProjects } from '@/hooks/use-projects';
 import { editProjectSchema, Project } from '@/schemas/project';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { EditableText } from '@/components/common/editable-text';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ProjectOverviewPage() {
   const { workspaceId, projectId } = useParams<{
@@ -30,6 +31,8 @@ export default function ProjectOverviewPage() {
     Number(projectId)
   );
   const { updateProject } = useProjects(Number(workspaceId));
+
+  const [activeTab, setActiveTab] = useState<'overview' | 'issues'>('overview');
 
   const form = useForm({
     resolver: zodResolver(editProjectSchema),
@@ -51,19 +54,17 @@ export default function ProjectOverviewPage() {
     try {
       await updateProject({
         id: project.id,
-        name: field === 'name' ? value : project.name,
+        name: field === 'name' ? value.trim() : project.name,
         description:
-          field === 'description' ? value || undefined : project.description,
+          field === 'description'
+            ? value.trim() || undefined
+            : project.description,
       });
-      toast.success(
-        `${field === 'name' ? 'Name' : 'Description'} updated successfully`
-      );
     } catch (error) {
       toast.error(
         `Failed to update ${field === 'name' ? 'name' : 'description'}`
       );
-      if (field === 'name') form.setValue('name', project.name);
-      else form.setValue('description', project.description || '');
+      form.setValue(field, project[field as keyof Project] as string);
     }
   };
 
@@ -78,93 +79,84 @@ export default function ProjectOverviewPage() {
   return (
     <BoardShell
       header={
-        <Breadcrumb className="ml-2">
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbPage>Workspace</BreadcrumbPage>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <Link to={`/workspaces/${workspaceId}/projects`}>Projects</Link>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{project?.name || 'Project'}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <div className="flex flex-row items-center gap-2">
+          <Breadcrumb className="ml-2">
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbPage>Workspace</BreadcrumbPage>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <Link to={`/workspaces/${workspaceId}/projects`}>Projects</Link>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{project?.name || 'Project'}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <Tabs value={activeTab}>
+            <TabsList>
+              <TabsTrigger
+                value="overview"
+                onClick={() => setActiveTab('overview')}
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="issues"
+                onClick={() => setActiveTab('issues')}
+              >
+                Issues
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       }
     >
-      <div className="flex flex-1 flex-col overflow-x-hidden">
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="issues">Issues</TabsTrigger>
-          </TabsList>
-          <TabsContent value="overview">
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium">Name</h3>
-                  <div>
-                    <Input
-                      {...form.register('name')}
-                      onBlur={form.handleSubmit(data => {
-                        handleSave('name', data.name);
-                      })}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          form.handleSubmit(data => {
-                            handleSave('name', data.name);
-                          })();
-                        }
-                      }}
-                      className="w-full"
+      <FormProvider {...form}>
+        <div className="flex flex-1 flex-col md:flex-row gap-4 p-4">
+          <Tabs value={activeTab} className="w-full">
+            <TabsContent value="overview">
+              <div className="flex-1">
+                <Card className="flex-1 flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="text-2xl">
+                      <EditableText<Project>
+                        fieldName="name"
+                        onSave={handleSave}
+                        editor="input"
+                        placeholder="No name"
+                        displayContent={v => v}
+                        displayContainerClassName=""
+                      />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <EditableText<Project>
+                      fieldName="description"
+                      onSave={handleSave}
+                      editor="textarea"
+                      placeholder="Add description..."
+                      displayContent={(v, p) => (
+                        <div className={`prose ${!v ? 'text-gray-400' : ''}`}>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {v || p}
+                          </ReactMarkdown>
+                        </div>
+                      )}
+                      displayContainerClassName="rounded"
                     />
-                    {form.formState.errors.name && (
-                      <p className="text-red-500 text-sm">
-                        {form.formState.errors.name.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Description</h3>
-                  <div>
-                    <Textarea
-                      {...form.register('description')}
-                      onBlur={form.handleSubmit(data => {
-                        handleSave('description', data.description || '');
-                      })}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          form.handleSubmit(data => {
-                            handleSave('description', data.description || '');
-                          })();
-                        }
-                      }}
-                      className="w-full"
-                    />
-                    {form.formState.errors.description && (
-                      <p className="text-red-500 text-sm">
-                        {form.formState.errors.description.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="issues">
-            <IssuesBoard />
-          </TabsContent>
-        </Tabs>
-      </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            <TabsContent value="issues">
+              <IssuesBoard />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </FormProvider>
     </BoardShell>
   );
 }

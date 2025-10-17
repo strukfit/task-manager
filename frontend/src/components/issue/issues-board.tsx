@@ -113,7 +113,7 @@ export default function IssuesBoard() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-4">
+    <div className="flex flex-col p-4">
       <DndContext
         sensors={sensors}
         collisionDetection={rectIntersection}

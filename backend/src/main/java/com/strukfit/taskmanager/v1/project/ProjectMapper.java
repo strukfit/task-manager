@@ -15,11 +15,13 @@ public interface ProjectMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "workspace", ignore = true)
+    @Mapping(target = "description", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
     void createProjectFromDTO(ProjectCreateDTO dto, @MappingTarget Project project);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "workspace", ignore = true)
+    @Mapping(target = "description", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
     void updateProjectFromDTO(ProjectUpdateDTO dto, @MappingTarget Project project);
 
     ProjectDTO toDTO(Project project);
