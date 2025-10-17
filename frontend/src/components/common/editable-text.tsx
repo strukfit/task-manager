@@ -42,6 +42,7 @@ export function EditableText<T extends object>({
   const editorRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
 
   const value = getValues(fieldName as string);
+  const hasError = errors[fieldName as string];
 
   const { ref: formRef, ...rest } = register(fieldName as string);
   const setRef = useCallback(
@@ -97,19 +98,27 @@ export function EditableText<T extends object>({
 
   if (!isEditing) {
     return (
-      <div
-        className={`cursor-text select-text ${displayContainerClassName}`}
-        onClick={handleEnterEdit}
-        tabIndex={0}
-        role="button"
-      >
-        {displayContent(value, placeholder)}
+      <div>
+        <div
+          className={`cursor-text select-text ${displayContainerClassName} ${
+            hasError ? 'border-b border-red-500' : ''
+          }`}
+          onClick={handleEnterEdit}
+          tabIndex={0}
+          role="button"
+        >
+          {displayContent(value, placeholder)}
+        </div>
+        {hasError && (
+          <p className="text-red-500 text-sm mt-1">
+            {hasError.message as string}
+          </p>
+        )}
       </div>
     );
   }
 
   const Editor = editor === 'textarea' ? Textarea : Input;
-  const hasError = errors[fieldName as string];
 
   return (
     <div>

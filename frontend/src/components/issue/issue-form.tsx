@@ -1,22 +1,7 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { FormProvider, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useIssueById, useIssues } from '@/hooks/use-issues';
 import {
   createIssueSchema,
@@ -24,23 +9,28 @@ import {
   IssueCreate,
   IssueEdit,
 } from '@/schemas/issue';
-import { ISSUE_PRIORITY_LABELS, ISSUE_STATUS_LABELS } from '@/constants/issue';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useProjects } from '@/hooks/use-projects';
+import { EditableText } from '@/components/common/editable-text';
+import { PrioritySelect } from './priority-select';
+import { StatusSelect } from './status-select';
+import { ProjectSelect } from './project-select';
 
 interface IssueFormProps {
   issueId?: number;
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
-const ISSUE_PROPERTIES = Object.entries(ISSUE_PRIORITY_LABELS);
-const ISSUE_STATUSES = Object.entries(ISSUE_STATUS_LABELS);
-
-export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
+export default function IssueForm({
+  issueId,
+  onSuccess,
+  onCancel,
+}: IssueFormProps) {
   const { workspaceId: workspaceIdStr } = useParams<{ workspaceId: string }>();
   const workspaceId = Number(workspaceIdStr);
   const { issue, isLoading: issueLoading } = useIssueById(workspaceId, issueId);
@@ -52,11 +42,11 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
   const form = useForm<IssueCreate | IssueEdit>({
     resolver: zodResolver(issueSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      priority: 'NONE',
-      status: 'TO_DO',
-      projectId: undefined as number | undefined,
+      title: issue?.title || '',
+      description: issue?.description || '',
+      priority: issue?.priority || 'NONE',
+      status: issue?.status || 'TO_DO',
+      projectId: issue?.project?.id || -1,
     },
   });
 
@@ -69,7 +59,7 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
     }
   }, [issue, form, issueId]);
 
-  const onSubmit = async (values: IssueCreate | IssueEdit) => {
+  const handleSave = async (values: IssueCreate | IssueEdit) => {
     try {
       if (issueId) {
         await updateIssue(values as IssueEdit);
@@ -77,10 +67,15 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
         await createIssue(values as IssueCreate);
       }
       onSuccess();
+      toast.success(issueId ? 'Issue updated' : 'Issue created');
     } catch (e) {
       const error = e as Error;
       toast.error(error.message || 'Failed to save issue');
     }
+  };
+
+  const onSubmit = async (data: IssueCreate | IssueEdit) => {
+    await handleSave(data);
   };
 
   if (issueLoading && issueId) {
@@ -92,130 +87,63 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter issue title" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+    <FormProvider {...form}>
+      <div className="flex flex-1 flex-col gap-4">
+        <EditableText
+          fieldName="title"
+          onSave={async (field, value) => {
+            await form.setValue(field as keyof IssueEdit, value);
+          }}
+          editor="input"
+          placeholder="Issue title"
+          displayContent={v => (
+            <p className={`${!v ? 'text-gray-400' : ''}`}>
+              {v || 'Issue title'}
+            </p>
           )}
         />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Enter issue description" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        <EditableText
+          fieldName="description"
+          onSave={async (field, value) => {
+            await form.setValue(field as keyof IssueEdit, value);
+          }}
+          editor="textarea"
+          placeholder="Add description..."
+          displayContent={(v, p) => (
+            <div className={`prose ${!v ? 'text-gray-400' : ''}`}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {v || p}
+              </ReactMarkdown>
+            </div>
           )}
+          displayContainerClassName="rounded min-h-[60px]"
+          editorClassName="min-h-[60px]"
         />
-        <FormField
-          control={form.control}
-          name="priority"
-          render={({ field }) => (
-            <FormItem key={field.name}>
-              <FormLabel>Priority</FormLabel>
-              <Select
-                key={field.value}
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Priority" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {ISSUE_PROPERTIES.map(([key, value]) => (
-                    <SelectItem key={key} value={key}>
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem key={field.name}>
-              <FormLabel>Status</FormLabel>
-              <Select
-                key={field.value}
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {ISSUE_STATUSES.map(([key, value]) => (
-                    <SelectItem key={key} value={key}>
-                      {value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="projectId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Project</FormLabel>
-              <FormControl>
-                <Select
-                  key={field.value}
-                  value={field.value?.toString() || ''}
-                  onValueChange={value =>
-                    field.onChange(value ? Number(value) : undefined)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem key={-1} value={'-1'}>
-                      None
-                    </SelectItem>
-                    {projects.map(project => (
-                      <SelectItem
-                        key={project.id}
-                        value={project.id.toString()}
-                      >
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" disabled={issueLoading}>
-          Save
-        </Button>
-      </form>
-    </Form>
+        <div className="flex flex-row gap-1">
+          <PrioritySelect form={form} />
+          <StatusSelect form={form} />
+          <ProjectSelect form={form} projects={projects || []} />
+        </div>
+        <hr className="border-t border-gray-200" />
+        <div className="flex flex-row gap-1 justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCancel}
+            disabled={issueLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            size="sm"
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={issueLoading}
+          >
+            {issueId ? 'Save' : 'Create Issue'}
+          </Button>
+        </div>
+      </div>
+    </FormProvider>
   );
 }

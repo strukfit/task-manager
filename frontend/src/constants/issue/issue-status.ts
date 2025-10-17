@@ -7,14 +7,6 @@ export const ISSUE_STATUS_LABELS = {
   DUPLICATE: 'Duplicate',
 } as const;
 
-export const ISSUE_PRIORITY_LABELS = {
-  NONE: 'No Priority',
-  LOW: 'Low',
-  MEDIUM: 'Medium',
-  HIGH: 'High',
-  CRITICAL: 'Critical',
-} as const;
-
 export const ISSUE_STATUSES = [
   'BACKLOG',
   'TO_DO',
@@ -23,16 +15,8 @@ export const ISSUE_STATUSES = [
   'CANCELED',
   'DUPLICATE',
 ] as const;
-export const ISSUE_PRIORITIES = [
-  'NONE',
-  'LOW',
-  'MEDIUM',
-  'HIGH',
-  'CRITICAL',
-] as const;
 
 export type IssueStatus = (typeof ISSUE_STATUSES)[number];
-export type IssuePriority = (typeof ISSUE_PRIORITIES)[number];
 
 export const ISSUE_STATUS_COLUMNS = {
   BACKLOG: { id: 'BACKLOG', name: 'Backlog' },

@@ -18,12 +18,15 @@ export function CreateIssueDialog({ trigger }: CreateIssueDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="p-4">
         <DialogHeader>
-          <DialogTitle>Create Issue</DialogTitle>
+          <DialogTitle className="text-base">New Issue</DialogTitle>
         </DialogHeader>
         <IssueForm
           onSuccess={() => {
+            setOpen(false);
+          }}
+          onCancel={() => {
             setOpen(false);
           }}
         />
