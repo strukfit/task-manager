@@ -23,6 +23,8 @@ import com.strukfit.taskmanager.v1.issue.enums.Status;
 import com.strukfit.taskmanager.v1.user.User;
 import com.strukfit.taskmanager.v1.utils.SecurityUtils;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/workspaces/{workspaceId}/issues")
 public class IssueController {
@@ -45,9 +47,9 @@ public class IssueController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<IssueDTO>> getById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<IssueDTO>> getById(@PathVariable Long workspaceId, @PathVariable Long id) {
         User user = securityUtils.getCurrentUser();
-        Issue entity = issueService.getById(id, user);
+        Issue entity = issueService.getById(workspaceId, id, user);
         IssueDTO issue = issueMapper.toDTO(entity);
         return ResponseEntity.ok(ApiResponse.success(issue));
     }
@@ -62,17 +64,18 @@ public class IssueController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<IssueDTO>> update(@PathVariable Long id, @RequestBody IssueUpdateDTO dto) {
+    public ResponseEntity<ApiResponse<IssueDTO>> update(@PathVariable Long workspaceId, @PathVariable Long id,
+            @Valid @RequestBody IssueUpdateDTO dto) {
         User user = securityUtils.getCurrentUser();
-        Issue entity = issueService.update(id, dto, user);
+        Issue entity = issueService.update(workspaceId, id, dto, user);
         IssueDTO issue = issueMapper.toDTO(entity);
         return ResponseEntity.ok(ApiResponse.success(issue));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long workspaceId, @PathVariable Long id) {
         User user = securityUtils.getCurrentUser();
-        issueService.delete(id, user);
+        issueService.delete(workspaceId, id, user);
         return ResponseEntity.status(204).body(ApiResponse.success(null, "Issue deleted"));
     }
 }

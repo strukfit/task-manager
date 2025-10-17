@@ -14,6 +14,7 @@ import ProjectsPage from './pages/projects';
 import WorkspaceFormPage from './pages/workspaces/workspace-form';
 import { ProtectedRoute } from './components/auth/protected-route';
 import ProjectOverviewPage from './pages/projects/project-overview';
+import IssueOverviewPage from './pages/board/issue-overview';
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,10 @@ createRoot(document.getElementById('root')!).render(
             <Route
               path="/workspaces/:workspaceId/projects/:projectId"
               element={<ProjectOverviewPage />}
+            />
+            <Route
+              path="/workspaces/:workspaceId/issues/:issueId"
+              element={<IssueOverviewPage />}
             />
           </Route>
         </Routes>

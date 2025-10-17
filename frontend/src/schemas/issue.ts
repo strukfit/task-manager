@@ -10,7 +10,7 @@ export const issueSchema = z.object({
     .max(60, 'Issue title must be 60 characters or less'),
   description: z
     .string()
-    .max(255, 'Description must be 255 characters or less')
+    .max(2000, 'Description must be 2000 characters or less')
     .optional(),
   priority: z.enum(ISSUE_PRIORITIES),
   status: z.enum(ISSUE_STATUSES),

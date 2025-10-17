@@ -1,6 +1,9 @@
 package com.strukfit.taskmanager.v1.workspace.dto;
 
+import com.strukfit.taskmanager.v1.validation.common.NotEmptyString;
+
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -8,6 +11,8 @@ import lombok.Data;
 public class WorkspaceCreateDTO {
 
     @NotBlank()
+    @NotNull()
+    @NotEmptyString()
     @Size(max = 60)
     private String name;
 

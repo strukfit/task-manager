@@ -1,15 +1,19 @@
 package com.strukfit.taskmanager.v1.user.dto;
 
+import com.strukfit.taskmanager.v1.validation.common.NotEmptyString;
 import com.strukfit.taskmanager.v1.validation.user.ValidPassword;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
 public class UserRegisterDTO {
     @NotBlank(message = "Username is mandatory")
+    @NotNull()
+    @NotEmptyString()
     @Size(max = 60, message = "Username cannot be longer than 60 characters")
     private String username;
 

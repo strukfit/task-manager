@@ -30,6 +30,7 @@ import { useParams } from 'react-router';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
+import { useProjects } from '@/hooks/use-projects';
 
 interface IssueFormProps {
   issueId?: number;
@@ -40,12 +41,11 @@ const ISSUE_PROPERTIES = Object.entries(ISSUE_PRIORITY_LABELS);
 const ISSUE_STATUSES = Object.entries(ISSUE_STATUS_LABELS);
 
 export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
-  const { workspaceId } = useParams<{ workspaceId: string }>();
-  const { issue, isLoading: issueLoading } = useIssueById(
-    Number(workspaceId),
-    issueId
-  );
-  const { createIssue, updateIssue } = useIssues(Number(workspaceId));
+  const { workspaceId: workspaceIdStr } = useParams<{ workspaceId: string }>();
+  const workspaceId = Number(workspaceIdStr);
+  const { issue, isLoading: issueLoading } = useIssueById(workspaceId, issueId);
+  const { createIssue, updateIssue } = useIssues(workspaceId);
+  const { data: projects } = useProjects(workspaceId);
 
   const issueSchema = issueId ? editIssueSchema : createIssueSchema;
 
@@ -62,7 +62,10 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
 
   useEffect(() => {
     if (issueId && issue) {
-      form.reset(issue);
+      form.reset({
+        ...issue,
+        projectId: issue.project?.id || -1,
+      });
     }
   }, [issue, form, issueId]);
 
@@ -181,6 +184,7 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
               <FormLabel>Project</FormLabel>
               <FormControl>
                 <Select
+                  key={field.value}
                   value={field.value?.toString() || ''}
                   onValueChange={value =>
                     field.onChange(value ? Number(value) : undefined)
@@ -190,12 +194,17 @@ export default function IssueForm({ issueId, onSuccess }: IssueFormProps) {
                     <SelectValue placeholder="Select Project" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {/* {projects.map(project => (
-                      <SelectItem key={project.id} value={project.id.toString()}>
+                    <SelectItem key={-1} value={'-1'}>
+                      None
+                    </SelectItem>
+                    {projects.map(project => (
+                      <SelectItem
+                        key={project.id}
+                        value={project.id.toString()}
+                      >
                         {project.name}
                       </SelectItem>
-                    ))} */}
+                    ))}
                   </SelectContent>
                 </Select>
               </FormControl>

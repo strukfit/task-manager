@@ -16,12 +16,14 @@ public interface IssueMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "workspace", ignore = true)
     @Mapping(target = "project", ignore = true)
+    @Mapping(target = "description", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
     void createIssueFromDTO(IssueCreateDTO dto, @MappingTarget Issue issue);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "workspace", ignore = true)
     @Mapping(target = "project", ignore = true)
+    @Mapping(target = "description", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
     void updateIssueFromDTO(IssueUpdateDTO dto, @MappingTarget Issue issue);
 
     IssueDTO toDTO(Issue issue);

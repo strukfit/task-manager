@@ -49,13 +49,28 @@ public class IssueService {
         return project;
     }
 
-    private Issue getIssueById(Long id, User user) {
+    private Issue getIssueById(Long workspaceId, Long id, User user) {
         Issue issue = issueRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Issue not found"));
         if (!issue.getWorkspace().getUser().getId().equals(user.getId())) {
             throw new RuntimeException("Unauthorized");
         }
+        if (!issue.getWorkspace().getId().equals(workspaceId)) {
+            throw new RuntimeException("Issue does not belong to workspace");
+        }
         return issue;
+    }
+
+    private void updateIssueProject(Issue issue, Long projectId) {
+        if (projectId == null) {
+            return;
+        }
+        if (projectId == -1) {
+            issue.setProject(null);
+            return;
+        }
+        Project project = getProjectById(issue.getWorkspace().getId(), projectId);
+        issue.setProject(project);
     }
 
     public Map<Status, List<IssueDTO>> getByWorkspaceGroupedByStatus(Long workspaceId, User user, Long projectId) {
@@ -69,8 +84,8 @@ public class IssueService {
                         Collectors.mapping(issueMapper::toDTO, Collectors.toList())));
     }
 
-    public Issue getById(Long id, User user) {
-        return getIssueById(id, user);
+    public Issue getById(Long workspaceId, Long id, User user) {
+        return getIssueById(workspaceId, id, user);
     }
 
     public Issue create(Long workspaceId, IssueCreateDTO dto, User user) {
@@ -78,25 +93,19 @@ public class IssueService {
         Issue issue = new Issue();
         issueMapper.createIssueFromDTO(dto, issue);
         issue.setWorkspace(workspace);
-        if (dto.getProjectId() != null) {
-            Project project = getProjectById(workspaceId, dto.getProjectId());
-            issue.setProject(project);
-        }
+        updateIssueProject(issue, dto.getProjectId());
         return issueRepository.save(issue);
     }
 
-    public Issue update(Long id, IssueUpdateDTO dto, User user) {
-        Issue issue = getIssueById(id, user);
+    public Issue update(Long workspaceId, Long id, IssueUpdateDTO dto, User user) {
+        Issue issue = getIssueById(workspaceId, id, user);
         issueMapper.updateIssueFromDTO(dto, issue);
-        if (dto.getProjectId() != null) {
-            Project project = getProjectById(issue.getWorkspace().getId(), dto.getProjectId());
-            issue.setProject(project);
-        }
+        updateIssueProject(issue, dto.getProjectId());
         return issueRepository.save(issue);
     }
 
-    public void delete(Long id, User user) {
-        Issue issue = getIssueById(id, user);
+    public void delete(Long workspaceId, Long id, User user) {
+        Issue issue = getIssueById(workspaceId, id, user);
         issueRepository.delete(issue);
     }
 }

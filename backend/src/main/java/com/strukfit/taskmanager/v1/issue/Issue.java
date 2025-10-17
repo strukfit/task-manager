@@ -32,6 +32,7 @@ public class Issue {
     @Column(nullable = false)
     private String title;
 
+    @Column(length = 2000, nullable = true)
     private String description;
 
     @Enumerated(EnumType.STRING)
