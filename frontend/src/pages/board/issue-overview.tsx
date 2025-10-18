@@ -129,8 +129,8 @@ export default function IssueOverviewPage() {
     >
       <FormProvider {...form}>
         <div className="flex flex-1 flex-col md:flex-row gap-4 p-4">
-          <div className="flex-1">
-            <Card className="flex-1 flex flex-col">
+          <div className="flex-1 w-[85%]">
+            <Card className="flex-1 flex flex-col h-full">
               <CardHeader>
                 <CardTitle className="text-2xl">
                   <EditableText
@@ -143,14 +143,16 @@ export default function IssueOverviewPage() {
                   />
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 w-full">
                 <EditableText
                   fieldName="description"
                   onSave={handleSave}
                   editor="textarea"
                   placeholder="Add description..."
                   displayContent={(v, p) => (
-                    <div className={`prose ${!v ? 'text-gray-400' : ''}`}>
+                    <div
+                      className={`prose break-words max-w-none ${!v ? 'text-gray-400' : ''}`}
+                    >
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {v || p}
                       </ReactMarkdown>
@@ -161,7 +163,7 @@ export default function IssueOverviewPage() {
               </CardContent>
             </Card>
           </div>
-          <div className="w-64 flex flex-col">
+          <div className="flex flex-col w-[15%]">
             <Card className="flex-1 flex flex-col">
               <CardHeader>
                 <CardTitle>Properties</CardTitle>

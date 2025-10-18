@@ -11,7 +11,7 @@ export default function BoardShell({ header, children }: BoardShellProps) {
     <SidebarProvider>
       <BoardSidebar activeMenuItem={location.pathname} />
       <SidebarInset>
-        <div className="p-4">
+        <div className="h-screen flex flex-col p-4">
           <header className="flex flex-row items-center mb-2">
             <SidebarTrigger />
             {header}
