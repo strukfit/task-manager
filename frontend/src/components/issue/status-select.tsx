@@ -10,30 +10,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { UseFormReturn } from 'react-hook-form';
-import { IssueCreate, IssueEdit } from '@/schemas/issue';
+import { Path, PathValue, UseFormReturn } from 'react-hook-form';
+import { cn } from '@/lib/utils';
 
-interface StatusSelectProps {
-  form: UseFormReturn<IssueCreate | IssueEdit>;
+interface StatusField {
+  status: IssueStatus;
 }
 
-export function StatusSelect({ form }: StatusSelectProps) {
+interface StatusSelectProps<T extends StatusField> {
+  form: UseFormReturn<T>;
+  onValueChange?: (value: string) => void;
+  className?: string;
+}
+
+export function StatusSelect<T extends StatusField>({
+  form,
+  onValueChange,
+  className,
+}: StatusSelectProps<T>) {
+  const path = 'status' as Path<T>;
+  const status = form.watch(path);
   return (
     <Select
-      value={form.watch('status')}
+      value={status}
       onValueChange={value => {
-        form.setValue('status', value as IssueStatus);
+        form.setValue(path, value as PathValue<T, Path<T>>);
+        onValueChange?.(value);
       }}
     >
       <SelectTrigger
         size="sm"
-        className="[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300"
+        className={cn(
+          '[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300 select-none',
+          className
+        )}
       >
         <SelectValue placeholder="Select Status">
-          {form.watch('status') && (
+          {status && (
             <div className="flex items-center gap-2">
-              {getStatusIcon(form.watch('status'))}
-              <span>{ISSUE_STATUS_LABELS[form.watch('status')]}</span>
+              {getStatusIcon(status)}
+              <span>{ISSUE_STATUS_LABELS[status]}</span>
             </div>
           )}
         </SelectValue>

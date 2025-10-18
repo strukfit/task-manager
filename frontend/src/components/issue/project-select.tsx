@@ -1,5 +1,4 @@
-import { IssueCreate, IssueEdit } from '@/schemas/issue';
-import { UseFormReturn } from 'react-hook-form';
+import { Path, PathValue, UseFormReturn } from 'react-hook-form';
 import {
   Select,
   SelectContent,
@@ -9,33 +8,54 @@ import {
 } from '../ui/select';
 import { getProjectIcon } from '@/constants/issue';
 import { Project } from '@/schemas/project';
+import { cn } from '@/lib/utils';
 
-interface ProjectSelectProps {
-  form: UseFormReturn<IssueCreate | IssueEdit>;
-  projects: Project[];
+interface ProjectIdField {
+  projectId?: number;
 }
 
-export function ProjectSelect({ form, projects }: ProjectSelectProps) {
+interface ProjectSelectProps<T extends ProjectIdField> {
+  form: UseFormReturn<T>;
+  projects: Project[];
+  onValueChange?: (value: string) => void;
+  className?: string;
+}
+
+export function ProjectSelect<T extends ProjectIdField>({
+  form,
+  projects,
+  onValueChange,
+  className,
+}: ProjectSelectProps<T>) {
+  const path = 'projectId' as Path<T>;
+  const projectId = form.watch(path);
   return (
     <Select
-      value={form.watch('projectId')?.toString() || ''}
+      value={projectId?.toString() || ''}
       onValueChange={value => {
-        form.setValue('projectId', value ? Number(value) : undefined);
+        form.setValue(
+          path,
+          (value ? Number(value) : undefined) as PathValue<T, Path<T>>
+        );
+        onValueChange?.(value);
       }}
     >
       <SelectTrigger
         size="sm"
-        className="[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300"
+        className={cn(
+          '[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300 select-none',
+          className
+        )}
       >
         <SelectValue placeholder="Select Project">
-          {form.watch('projectId')?.toString() && (
+          {projectId?.toString() && (
             <div className="flex items-center gap-2">
-              {getProjectIcon(form.watch('projectId')?.toString() || '-1')}
+              {getProjectIcon(projectId?.toString() || '-1')}
               <span>
-                {form.watch('projectId') === -1
+                {projectId === -1
                   ? 'None'
-                  : projects.find(p => p.id === form.watch('projectId'))
-                      ?.name || 'Select Project'}
+                  : projects.find(p => p.id === projectId)?.name ||
+                    'Select Project'}
               </span>
             </div>
           )}

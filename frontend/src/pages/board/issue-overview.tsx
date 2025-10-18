@@ -16,22 +16,13 @@ import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  ISSUE_PRIORITY_LABELS,
-  ISSUE_STATUS_LABELS,
-  IssuePriority,
-  IssueStatus,
-} from '@/constants/issue';
+import { IssuePriority, IssueStatus } from '@/constants/issue';
 import { useProjects } from '@/hooks/use-projects';
 import { EditableText } from '@/components/common/editable-text';
 import remarkGfm from 'remark-gfm';
+import { PrioritySelect } from '@/components/issue/priority-select';
+import { StatusSelect } from '@/components/issue/status-select';
+import { ProjectSelect } from '@/components/issue/project-select';
 
 export default function IssueOverviewPage() {
   const { workspaceId: workspaceIdStr, issueId: issueIdStr } = useParams<{
@@ -165,85 +156,30 @@ export default function IssueOverviewPage() {
           </div>
           <div className="flex flex-col w-[15%]">
             <Card className="flex-1 flex flex-col">
-              <CardHeader>
-                <CardTitle>Properties</CardTitle>
-              </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium">Priority</h3>
-                  <Select
-                    value={form.watch('priority')}
-                    onValueChange={value => {
-                      form.setValue('priority', value as IssuePriority);
-                      handleSave('priority', value);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Priority" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(ISSUE_PRIORITY_LABELS).map(
-                        ([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            {value}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Status</h3>
-                  <Select
-                    value={form.watch('status')}
-                    onValueChange={value => {
-                      form.setValue('status', value as IssueStatus);
-                      handleSave('status', value);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(ISSUE_STATUS_LABELS).map(
-                        ([key, value]) => (
-                          <SelectItem key={key} value={key}>
-                            {value}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium">Project</h3>
-                  <Select
-                    value={form.watch('projectId')?.toString() || ''}
-                    onValueChange={value => {
-                      form.setValue(
-                        'projectId',
-                        value ? Number(value) : undefined
-                      );
-                      handleSave('projectId', value);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem key={-1} value={'-1'}>
-                        None
-                      </SelectItem>
-                      {projects?.map(project => (
-                        <SelectItem
-                          key={project.id}
-                          value={project.id.toString()}
-                        >
-                          {project.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-1 flex-col gap-4">
+                  <div className="flex flex-1 flex-col gap-2">
+                    <p className="font-bold select-none">Properties</p>
+                    <PrioritySelect
+                      form={form}
+                      onValueChange={v => handleSave('priority', v)}
+                      className="w-full"
+                    />
+                    <StatusSelect
+                      form={form}
+                      onValueChange={v => handleSave('status', v)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-2">
+                    <p className="font-bold select-none">Project</p>
+                    <ProjectSelect
+                      form={form}
+                      projects={projects || []}
+                      onValueChange={v => handleSave('projectId', v)}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -1,4 +1,4 @@
-import { UseFormReturn } from 'react-hook-form';
+import { Path, PathValue, UseFormReturn } from 'react-hook-form';
 import {
   Select,
   SelectContent,
@@ -11,29 +11,45 @@ import {
   IssuePriority,
   getPriorityIcon,
 } from '@/constants/issue';
-import { IssueCreate, IssueEdit } from '@/schemas/issue';
+import { cn } from '@/lib/utils';
 
-interface PrioritySelectProps {
-  form: UseFormReturn<IssueCreate | IssueEdit>;
+interface PriorityField {
+  priority: IssuePriority;
 }
 
-export function PrioritySelect({ form }: PrioritySelectProps) {
+interface PrioritySelectProps<T extends PriorityField> {
+  form: UseFormReturn<T>;
+  onValueChange?: (value: string) => void;
+  className?: string;
+}
+
+export function PrioritySelect<T extends PriorityField>({
+  form,
+  onValueChange,
+  className,
+}: PrioritySelectProps<T>) {
+  const path = 'priority' as Path<T>;
+  const priority = form.watch(path);
   return (
     <Select
-      value={form.watch('priority')}
+      value={priority}
       onValueChange={value => {
-        form.setValue('priority', value as IssuePriority);
+        form.setValue(path, value as PathValue<T, Path<T>>);
+        onValueChange?.(value);
       }}
     >
       <SelectTrigger
         size="sm"
-        className="[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300"
+        className={cn(
+          '[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300 select-none',
+          className
+        )}
       >
         <SelectValue placeholder="Select Priority">
-          {form.watch('priority') && (
+          {priority && (
             <div className="flex items-center gap-2">
-              {getPriorityIcon(form.watch('priority'))}
-              <span>{ISSUE_PRIORITY_LABELS[form.watch('priority')]}</span>
+              {getPriorityIcon(priority)}
+              <span>{ISSUE_PRIORITY_LABELS[priority]}</span>
             </div>
           )}
         </SelectValue>
