@@ -18,13 +18,7 @@ export default function SortableIssue({ id, issue }: SortableIssueProps) {
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="mb-2"
-      {...attributes}
-      {...listeners}
-    >
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <IssueCard issue={issue} />
     </div>
   );

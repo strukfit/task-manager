@@ -21,12 +21,14 @@ interface PrioritySelectProps<T extends PriorityField> {
   form: UseFormReturn<T>;
   onValueChange?: (value: string) => void;
   className?: string;
+  showValue?: boolean;
 }
 
 export function PrioritySelect<T extends PriorityField>({
   form,
   onValueChange,
   className,
+  showValue = true,
 }: PrioritySelectProps<T>) {
   const path = 'priority' as Path<T>;
   const priority = form.watch(path);
@@ -49,7 +51,7 @@ export function PrioritySelect<T extends PriorityField>({
           {priority && (
             <div className="flex items-center gap-2">
               {getPriorityIcon(priority)}
-              <span>{ISSUE_PRIORITY_LABELS[priority]}</span>
+              {showValue && <span>{ISSUE_PRIORITY_LABELS[priority]}</span>}
             </div>
           )}
         </SelectValue>

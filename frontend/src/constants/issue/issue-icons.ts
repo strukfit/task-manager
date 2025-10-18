@@ -58,33 +58,34 @@ const colorMap = {
   project: 'text-gray-400',
 };
 
-export const getStatusIcon = (status: IssueStatus): React.ReactElement => {
+const createIcon = (icon: LucideIcon, size: number = 4, color: string) => {
+  return React.createElement(icon, {
+    className: `h-${size} w-${size} ${color}`,
+  });
+};
+
+export const getStatusIcon = (
+  status: IssueStatus,
+  size: number = 4
+): React.ReactElement => {
   const icon = statusIcons[status];
   const color = colorMap.status[status];
-
-  return React.createElement(icon, {
-    className: `h-4 w-4 ${color}`,
-  });
+  return createIcon(icon, size, color);
 };
 
 export const getPriorityIcon = (
-  priority: IssuePriority
+  priority: IssuePriority,
+  size: number = 4
 ): React.ReactElement => {
   const icon = priorityIcons[priority];
   const color = colorMap.priority[priority];
-
-  return React.createElement(icon, {
-    className: `h-4 w-4 ${color}`,
-  });
+  return createIcon(icon, size, color);
 };
 
-export const getProjectIcon = (projectId: string) => {
+export const getProjectIcon = (projectId: string, size: number = 4) => {
   let icon = projectIcon;
   if (projectId === '-1') {
     icon = noneProjectIcon;
   }
-
-  return React.createElement(icon, {
-    className: `h-4 w-4 ${colorMap.project}`,
-  });
+  return createIcon(icon, size, colorMap.project);
 };

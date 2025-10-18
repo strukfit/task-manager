@@ -14,6 +14,8 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
+import { QUERY_KEYS as ISSUE_QUERY_KEYS } from './use-issues';
+
 export const QUERY_KEYS = {
   projects: (workspaceId: number) => ['projects', workspaceId],
   projectsList: (workspaceId: number) => [
@@ -38,6 +40,9 @@ export const useProjects = (workspaceId: number) => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.projects(workspaceId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ISSUE_QUERY_KEYS.issues(workspaceId),
       });
     },
   });
@@ -100,6 +105,9 @@ export const useProjects = (workspaceId: number) => {
         await queryClient.invalidateQueries({
           queryKey: QUERY_KEYS.project(workspaceId, updatedProject.id!),
         });
+        await queryClient.invalidateQueries({
+          queryKey: ISSUE_QUERY_KEYS.issues(workspaceId),
+        });
       }
     },
   });
@@ -137,6 +145,9 @@ export const useProjects = (workspaceId: number) => {
     onSettled: async () => {
       await queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.projects(workspaceId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ISSUE_QUERY_KEYS.issues(workspaceId),
       });
     },
   });

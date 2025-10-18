@@ -1,4 +1,8 @@
-import { ISSUE_STATUS_COLUMNS, IssueStatus } from '@/constants/issue';
+import {
+  getStatusIcon,
+  ISSUE_STATUS_COLUMNS,
+  IssueStatus,
+} from '@/constants/issue';
 import { useIssues } from '@/hooks/use-issues';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
@@ -125,6 +129,7 @@ export default function IssuesBoard() {
               key={columnId}
               columnId={columnId}
               column={column}
+              icon={getStatusIcon(columnId as IssueStatus)}
             />
           ))}
         </div>
