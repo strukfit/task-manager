@@ -1,4 +1,6 @@
 import { API_ROUTES, BASE_URL } from '@/constants/api';
+import { AuthResponse } from '@/schemas/auth';
+import { ApiResponse } from '@/types/common';
 import axios from 'axios';
 
 const apiClient = axios.create({
@@ -29,14 +31,17 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem('refreshToken');
-        const response = await axios.post(
-          API_ROUTES.auth.refresh,
+        const response = await axios.post<ApiResponse<AuthResponse>>(
+          `${BASE_URL}${API_ROUTES.auth.refresh}`,
           { refreshToken },
           {
             headers: { 'Content-Type': 'application/json' },
           }
         );
-        const { accessToken, refreshToken: newRefreshToken } = response.data;
+        const { accessToken, refreshToken: newRefreshToken } =
+          response.data.data;
+
+        console.log(response);
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', newRefreshToken);
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
