@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useProjectById, useProjects } from '@/hooks/use-projects';
+import { useProjectById } from '@/hooks/use-projects';
 import { editProjectSchema, Project } from '@/schemas/project';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -26,11 +26,11 @@ export default function ProjectOverviewPage() {
     workspaceId: string;
     projectId: string;
   }>();
-  const { project, isLoading: projectLoading } = useProjectById(
-    Number(workspaceId),
-    Number(projectId)
-  );
-  const { updateProject } = useProjects(Number(workspaceId));
+  const {
+    project,
+    updateProject,
+    isLoading: projectLoading,
+  } = useProjectById(Number(workspaceId), Number(projectId));
 
   const [activeTab, setActiveTab] = useState<'overview' | 'issues'>('overview');
 

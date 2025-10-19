@@ -11,7 +11,12 @@ import {
   ProjectEdit,
   ProjectsResponse,
 } from '@/schemas/project';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
 import { QUERY_KEYS as ISSUE_QUERY_KEYS } from './use-issues';
@@ -25,17 +30,11 @@ export const QUERY_KEYS = {
   project: (workspaceId: number, id: number) => ['project', workspaceId, id],
 } as const;
 
-export const useProjects = (workspaceId: number) => {
-  const queryClient = useQueryClient();
-
-  const projectsQuery = useQuery<ProjectsResponse, AxiosError>({
-    queryKey: QUERY_KEYS.projectsList(workspaceId),
-    queryFn: () => getProjects(workspaceId),
-    staleTime: 1000 * 60 * 5,
-    retry: 2,
-  });
-
-  const createProjectMutation = useMutation({
+const generateCreateProjectMutation = (
+  queryClient: QueryClient,
+  workspaceId: number
+) =>
+  useMutation({
     mutationFn: (project: ProjectCreate) => createProject(workspaceId, project),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -47,7 +46,55 @@ export const useProjects = (workspaceId: number) => {
     },
   });
 
-  const updateProjectMutation = useMutation({
+const generateDeleteProjectMutation = (
+  queryClient: QueryClient,
+  workspaceId: number
+) =>
+  useMutation({
+    mutationFn: (id: number) => deleteProject(workspaceId, id),
+    onMutate: async workspaceId => {
+      await queryClient.cancelQueries({
+        queryKey: QUERY_KEYS.projects(workspaceId),
+      });
+
+      const previousProjects = queryClient.getQueryData<ProjectsResponse>(
+        QUERY_KEYS.projectsList(workspaceId)
+      );
+
+      if (previousProjects) {
+        queryClient.setQueryData<ProjectsResponse>(
+          QUERY_KEYS.projectsList(workspaceId),
+          {
+            ...previousProjects.filter(w => w.id !== workspaceId),
+          }
+        );
+      }
+
+      return { previousProjects };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousProjects) {
+        queryClient.setQueryData(
+          QUERY_KEYS.projectsList(workspaceId),
+          context.previousProjects
+        );
+      }
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.projects(workspaceId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ISSUE_QUERY_KEYS.issues(workspaceId),
+      });
+    },
+  });
+
+const generateUpdateProjectMutation = (
+  queryClient: QueryClient,
+  workspaceId: number
+) =>
+  useMutation({
     mutationFn: (project: ProjectEdit) => updateProject(workspaceId, project),
     onMutate: async updatedProject => {
       await queryClient.cancelQueries({
@@ -112,45 +159,30 @@ export const useProjects = (workspaceId: number) => {
     },
   });
 
-  const deleteProjectMutation = useMutation({
-    mutationFn: (id: number) => deleteProject(workspaceId, id),
-    onMutate: async workspaceId => {
-      await queryClient.cancelQueries({
-        queryKey: QUERY_KEYS.projects(workspaceId),
-      });
+export const useProjects = (workspaceId: number) => {
+  const queryClient = useQueryClient();
 
-      const previousProjects = queryClient.getQueryData<ProjectsResponse>(
-        QUERY_KEYS.projectsList(workspaceId)
-      );
-
-      if (previousProjects) {
-        queryClient.setQueryData<ProjectsResponse>(
-          QUERY_KEYS.projectsList(workspaceId),
-          {
-            ...previousProjects.filter(w => w.id !== workspaceId),
-          }
-        );
-      }
-
-      return { previousProjects };
-    },
-    onError: (_err, _variables, context) => {
-      if (context?.previousProjects) {
-        queryClient.setQueryData(
-          QUERY_KEYS.projectsList(workspaceId),
-          context.previousProjects
-        );
-      }
-    },
-    onSettled: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projects(workspaceId),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ISSUE_QUERY_KEYS.issues(workspaceId),
-      });
-    },
+  const projectsQuery = useQuery<ProjectsResponse, AxiosError>({
+    queryKey: QUERY_KEYS.projectsList(workspaceId),
+    queryFn: () => getProjects(workspaceId),
+    staleTime: 1000 * 60 * 5,
+    retry: 2,
   });
+
+  const createProjectMutation = generateCreateProjectMutation(
+    queryClient,
+    workspaceId
+  );
+
+  const updateProjectMutation = generateUpdateProjectMutation(
+    queryClient,
+    workspaceId
+  );
+
+  const deleteProjectMutation = generateDeleteProjectMutation(
+    queryClient,
+    workspaceId
+  );
 
   return {
     data: projectsQuery.data || [],
@@ -164,6 +196,8 @@ export const useProjects = (workspaceId: number) => {
 };
 
 export const useProjectById = (workspaceId?: number, id?: number) => {
+  const queryClient = useQueryClient();
+
   const projectByIdQuery = useQuery<Project, AxiosError>({
     queryKey: QUERY_KEYS.project(workspaceId!, id!),
     queryFn: () => getProjectById(workspaceId!, id!),
@@ -172,9 +206,27 @@ export const useProjectById = (workspaceId?: number, id?: number) => {
     retry: 2,
   });
 
+  const createProjectMutation = generateCreateProjectMutation(
+    queryClient,
+    workspaceId!
+  );
+
+  const updateProjectMutation = generateUpdateProjectMutation(
+    queryClient,
+    workspaceId!
+  );
+
+  const deleteProjectMutation = generateDeleteProjectMutation(
+    queryClient,
+    workspaceId!
+  );
+
   return {
     project: projectByIdQuery.data,
     isLoading: projectByIdQuery.isLoading,
     error: projectByIdQuery.error,
+    createProject: createProjectMutation.mutateAsync,
+    updateProject: updateProjectMutation.mutateAsync,
+    deleteProject: deleteProjectMutation.mutateAsync,
   };
 };

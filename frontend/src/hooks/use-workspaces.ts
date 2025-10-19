@@ -6,7 +6,12 @@ import {
   updateWorkspace,
 } from '@/api/workspaces';
 import { Workspace, WorkspacesResponse } from '@/schemas/workspace';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
 export const QUERY_KEYS = {
@@ -15,24 +20,16 @@ export const QUERY_KEYS = {
   workspace: (id: number) => ['workspace', id],
 } as const;
 
-export const useWorkspaces = () => {
-  const queryClient = useQueryClient();
-
-  const workspacesQuery = useQuery<WorkspacesResponse, AxiosError>({
-    queryKey: QUERY_KEYS.workspacesList(),
-    queryFn: () => getWorkspaces(),
-    staleTime: 1000 * 60 * 5,
-    retry: 2,
-  });
-
-  const createWorkspaceMutation = useMutation({
+const generateCreateWorkspaceMutation = (queryClient: QueryClient) =>
+  useMutation({
     mutationFn: createWorkspace,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.workspaces });
     },
   });
 
-  const updateWorkspaceMutation = useMutation({
+const generateUpdateWorkspaceMutation = (queryClient: QueryClient) =>
+  useMutation({
     mutationFn: updateWorkspace,
     onMutate: async updatedWorkspace => {
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.workspaces });
@@ -92,7 +89,8 @@ export const useWorkspaces = () => {
     },
   });
 
-  const deleteWorkspaceMutation = useMutation({
+const generateDeleteWorkspaceMutation = (queryClient: QueryClient) =>
+  useMutation({
     mutationFn: deleteWorkspace,
     onMutate: async workspaceId => {
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.workspaces });
@@ -125,6 +123,20 @@ export const useWorkspaces = () => {
     },
   });
 
+export const useWorkspaces = () => {
+  const queryClient = useQueryClient();
+
+  const workspacesQuery = useQuery<WorkspacesResponse, AxiosError>({
+    queryKey: QUERY_KEYS.workspacesList(),
+    queryFn: () => getWorkspaces(),
+    staleTime: 1000 * 60 * 5,
+    retry: 2,
+  });
+
+  const createWorkspaceMutation = generateCreateWorkspaceMutation(queryClient);
+  const updateWorkspaceMutation = generateUpdateWorkspaceMutation(queryClient);
+  const deleteWorkspaceMutation = generateDeleteWorkspaceMutation(queryClient);
+
   return {
     data: workspacesQuery.data || [],
     isLoading: workspacesQuery.isLoading,
@@ -137,6 +149,8 @@ export const useWorkspaces = () => {
 };
 
 export const useWorkspaceById = (id?: number) => {
+  const queryClient = useQueryClient();
+
   const workspaceByIdQuery = useQuery<Workspace, AxiosError>({
     queryKey: QUERY_KEYS.workspace(id!),
     queryFn: () => getWorkspaceById(id!),
@@ -145,9 +159,16 @@ export const useWorkspaceById = (id?: number) => {
     retry: 2,
   });
 
+  const createWorkspaceMutation = generateCreateWorkspaceMutation(queryClient);
+  const updateWorkspaceMutation = generateUpdateWorkspaceMutation(queryClient);
+  const deleteWorkspaceMutation = generateDeleteWorkspaceMutation(queryClient);
+
   return {
     workspace: workspaceByIdQuery.data,
     isLoading: workspaceByIdQuery.isLoading,
     error: workspaceByIdQuery.error,
+    createWorkspace: createWorkspaceMutation.mutateAsync,
+    updateWorkspace: updateWorkspaceMutation.mutateAsync,
+    deleteWorkspace: deleteWorkspaceMutation.mutateAsync,
   };
 };

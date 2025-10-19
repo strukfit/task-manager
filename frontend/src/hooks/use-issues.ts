@@ -7,7 +7,12 @@ import {
 } from '@/api/issues';
 import { IssueStatus } from '@/constants/issue';
 import { Issue, IssueCreate, IssueEdit, IssuesResponse } from '@/schemas/issue';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
 export type IssuesQueryConfig = {
@@ -33,18 +38,12 @@ export const DEFAULT_ISSUES_RESPONSE: IssuesResponse = {
   DUPLICATE: [],
 } as const;
 
-export const useIssues = (workspaceId: number, config?: IssuesQueryConfig) => {
-  const { projectId } = config || {};
-  const queryClient = useQueryClient();
-
-  const issuesQuery = useQuery<IssuesResponse, AxiosError>({
-    queryKey: QUERY_KEYS.issuesList(workspaceId, { projectId }),
-    queryFn: () => getIssues(workspaceId, { projectId }),
-    staleTime: 1000 * 60 * 5,
-    retry: 2,
-  });
-
-  const createIssueMutation = useMutation({
+const generateCreateIssueMutation = (
+  queryClient: QueryClient,
+  workspaceId: number,
+  projectId?: number
+) =>
+  useMutation({
     mutationFn: (issue: IssueCreate) => createIssue(workspaceId, issue),
     onSuccess: newIssue => {
       queryClient.invalidateQueries({
@@ -67,7 +66,12 @@ export const useIssues = (workspaceId: number, config?: IssuesQueryConfig) => {
     },
   });
 
-  const updateIssueMutation = useMutation({
+const generateUpdateIssueMutation = (
+  queryClient: QueryClient,
+  workspaceId: number,
+  projectId?: number
+) =>
+  useMutation({
     mutationFn: (issue: IssueEdit) => updateIssue(workspaceId, issue),
     onMutate: async updatedIssue => {
       await queryClient.cancelQueries({
@@ -141,7 +145,12 @@ export const useIssues = (workspaceId: number, config?: IssuesQueryConfig) => {
     },
   });
 
-  const deleteIssueMutation = useMutation({
+const generateDeleteIssueMutation = (
+  queryClient: QueryClient,
+  workspaceId: number,
+  projectId?: number
+) =>
+  useMutation({
     mutationFn: (id: number) => deleteIssue(workspaceId, id),
     onMutate: async id => {
       await queryClient.cancelQueries({
@@ -191,6 +200,35 @@ export const useIssues = (workspaceId: number, config?: IssuesQueryConfig) => {
     },
   });
 
+export const useIssues = (workspaceId: number, config?: IssuesQueryConfig) => {
+  const { projectId } = config || {};
+  const queryClient = useQueryClient();
+
+  const issuesQuery = useQuery<IssuesResponse, AxiosError>({
+    queryKey: QUERY_KEYS.issuesList(workspaceId, { projectId }),
+    queryFn: () => getIssues(workspaceId, { projectId }),
+    staleTime: 1000 * 60 * 5,
+    retry: 2,
+  });
+
+  const createIssueMutation = generateCreateIssueMutation(
+    queryClient,
+    workspaceId,
+    projectId
+  );
+
+  const updateIssueMutation = generateUpdateIssueMutation(
+    queryClient,
+    workspaceId,
+    projectId
+  );
+
+  const deleteIssueMutation = generateDeleteIssueMutation(
+    queryClient,
+    workspaceId,
+    projectId
+  );
+
   return {
     data: issuesQuery.data || DEFAULT_ISSUES_RESPONSE,
     isLoading: issuesQuery.isLoading,
@@ -203,6 +241,8 @@ export const useIssues = (workspaceId: number, config?: IssuesQueryConfig) => {
 };
 
 export const useIssueById = (workspaceId?: number, id?: number) => {
+  const queryClient = useQueryClient();
+
   const issueByIdQuery = useQuery<Issue, AxiosError>({
     queryKey: QUERY_KEYS.issue(workspaceId!, id!),
     queryFn: () => getIssueById(workspaceId!, id!),
@@ -211,9 +251,27 @@ export const useIssueById = (workspaceId?: number, id?: number) => {
     retry: 2,
   });
 
+  const createIssueMutation = generateCreateIssueMutation(
+    queryClient,
+    workspaceId!
+  );
+
+  const updateIssueMutation = generateUpdateIssueMutation(
+    queryClient,
+    workspaceId!
+  );
+
+  const deleteIssueMutation = generateDeleteIssueMutation(
+    queryClient,
+    workspaceId!
+  );
+
   return {
     issue: issueByIdQuery.data,
     isLoading: issueByIdQuery.isLoading,
     error: issueByIdQuery.error,
+    createIssue: createIssueMutation.mutateAsync,
+    updateIssue: updateIssueMutation.mutateAsync,
+    deleteIssue: deleteIssueMutation.mutateAsync,
   };
 };

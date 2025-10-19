@@ -10,7 +10,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useIssueById, useIssues } from '@/hooks/use-issues';
+import { useIssueById } from '@/hooks/use-issues';
 import { editIssueSchema, Issue, IssueEdit } from '@/schemas/issue';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -31,8 +31,11 @@ export default function IssueOverviewPage() {
   }>();
   const workspaceId = Number(workspaceIdStr);
   const issueId = Number(issueIdStr);
-  const { issue, isLoading: issueLoading } = useIssueById(workspaceId, issueId);
-  const { updateIssue } = useIssues(workspaceId);
+  const {
+    issue,
+    isLoading: issueLoading,
+    updateIssue,
+  } = useIssueById(workspaceId, issueId);
   const { data: projects } = useProjects(workspaceId);
 
   const form = useForm<IssueEdit>({

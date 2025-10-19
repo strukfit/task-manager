@@ -18,7 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/use-auth';
-import { useWorkspaces, useWorkspaceById } from '@/hooks/use-workspaces';
+import { useWorkspaceById } from '@/hooks/use-workspaces';
 import {
   createWorkspaceSchema,
   editWorkspaceSchema,
@@ -44,10 +44,12 @@ export default function WorkspaceFormPage() {
   const workspaceSchema = workspaceId
     ? editWorkspaceSchema
     : createWorkspaceSchema;
-  const { createWorkspace, updateWorkspace } = useWorkspaces();
-  const { workspace, isLoading: workspaceLoading } = useWorkspaceById(
-    Number(workspaceId)
-  );
+  const {
+    workspace,
+    createWorkspace,
+    updateWorkspace,
+    isLoading: workspaceLoading,
+  } = useWorkspaceById(Number(workspaceId));
 
   const baseUrl = '/workspaces';
   const redirectUrl = baseUrl + (searchParams.get('redirect') || '');

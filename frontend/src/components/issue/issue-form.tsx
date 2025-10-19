@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useIssueById, useIssues } from '@/hooks/use-issues';
+import { useIssueById } from '@/hooks/use-issues';
 import {
   createIssueSchema,
   editIssueSchema,
@@ -33,8 +33,12 @@ export default function IssueForm({
 }: IssueFormProps) {
   const { workspaceId: workspaceIdStr } = useParams<{ workspaceId: string }>();
   const workspaceId = Number(workspaceIdStr);
-  const { issue, isLoading: issueLoading } = useIssueById(workspaceId, issueId);
-  const { createIssue, updateIssue } = useIssues(workspaceId);
+  const {
+    issue,
+    isLoading: issueLoading,
+    createIssue,
+    updateIssue,
+  } = useIssueById(workspaceId, issueId);
   const { data: projects } = useProjects(workspaceId);
 
   const issueSchema = issueId ? editIssueSchema : createIssueSchema;
