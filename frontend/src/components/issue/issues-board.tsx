@@ -14,6 +14,8 @@ import {
   useSensors,
   DragEndEvent,
   rectIntersection,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import { toast } from 'sonner';
 import { Columns } from '@/types/board';
@@ -31,6 +33,8 @@ export default function IssuesBoard() {
       {} as Columns
     )
   );
+
+  const [activeNode, setActiveNode] = useState<React.ReactNode | null>(null);
 
   const { data: issues, updateIssue } = useIssues(Number(workspaceId), {
     projectId: projectIdParam ? Number(projectIdParam) : undefined,
@@ -59,8 +63,17 @@ export default function IssuesBoard() {
     );
   }, [issues]);
 
+  const onDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const element = event.active.data.current?.element;
+      setActiveNode(element || null);
+    },
+    [columns]
+  );
+
   const onDragEnd = useCallback(
     async (event: DragEndEvent) => {
+      setActiveNode(null);
       const { active, over } = event;
 
       const activeId = active.id.toString();
@@ -130,6 +143,7 @@ export default function IssuesBoard() {
       <DndContext
         sensors={sensors}
         collisionDetection={rectIntersection}
+        onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
         <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row gap-4">
@@ -142,6 +156,7 @@ export default function IssuesBoard() {
             />
           ))}
         </div>
+        <DragOverlay zIndex={1000}>{activeNode}</DragOverlay>
       </DndContext>
     </div>
   );
