@@ -41,7 +41,7 @@ export function StatusSelect<T extends StatusField>({
       <SelectTrigger
         size="sm"
         className={cn(
-          '[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300 select-none',
+          '[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300 select-none rounded-sm',
           className
         )}
       >

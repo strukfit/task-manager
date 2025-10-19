@@ -25,9 +25,9 @@ export default function DroppableColumn({
   return (
     <div className="flex flex-col h-full">
       <Card
-        className={`bg-gray-50 flex flex-col h-full ${isOver ? 'bg-blue-100' : ''}`}
+        className={`bg-gray-50 flex flex-col h-full rounded-sm lg:w-sm py-4 gap-2 ${isOver ? 'bg-blue-100' : ''}`}
       >
-        <CardHeader>
+        <CardHeader className="px-4">
           <CardTitle className="flex flex-row gap-2 select-none">
             {icon}
             {column.name}

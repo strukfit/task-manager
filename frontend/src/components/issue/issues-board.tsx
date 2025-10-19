@@ -4,7 +4,7 @@ import {
   IssueStatus,
 } from '@/constants/issue';
 import { useIssues } from '@/hooks/use-issues';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 
 import {
@@ -59,62 +59,71 @@ export default function IssuesBoard() {
     );
   }, [issues]);
 
-  const onDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
+  const onDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
 
-    const activeId = active.id.toString();
-    const activeContainer = active.data.current?.sortable
-      .containerId as IssueStatus;
+      const activeId = active.id.toString();
+      const activeContainer = active.data.current?.sortable
+        .containerId as IssueStatus;
 
-    let overContainer: IssueStatus;
-    if (over) {
-      overContainer = (over.data.current?.sortable.containerId ||
-        over.id) as IssueStatus;
-    } else {
-      const collisions = event.collisions;
-      if (!collisions || collisions.length <= 0) return;
-      overContainer = collisions[0].id as IssueStatus;
-    }
+      let overContainer: IssueStatus;
+      if (over) {
+        overContainer = (over.data.current?.sortable.containerId ||
+          over.id) as IssueStatus;
+      } else {
+        const collisions = event.collisions;
+        if (!collisions || collisions.length <= 0) return;
+        overContainer = collisions[0].id as IssueStatus;
+      }
 
-    if (activeContainer === overContainer) return;
+      if (activeContainer === overContainer) return;
 
-    const activeIssue = columns[activeContainer].issues.find(
-      i => i.id.toString() === activeId
-    );
-    if (!activeIssue) return;
-
-    let overIndex = columns[overContainer].issues.length;
-    if (over && over.id.toString() !== activeId) {
-      overIndex = columns[overContainer].issues.findIndex(
-        issue => issue.id.toString() === over.id.toString()
+      const activeIssue = columns[activeContainer].issues.find(
+        i => i.id.toString() === activeId
       );
-    }
+      if (!activeIssue) return;
 
-    const sourceIssues = [...columns[activeContainer].issues];
-    const destIssues = [...columns[overContainer].issues];
-    const sourceIndex = sourceIssues.findIndex(
-      i => i.id.toString() === activeId
-    );
-    sourceIssues.splice(sourceIndex, 1);
-    destIssues.splice(overIndex, 0, { ...activeIssue, status: overContainer });
+      let overIndex = columns[overContainer].issues.length;
+      if (over && over.id.toString() !== activeId) {
+        overIndex = columns[overContainer].issues.findIndex(
+          issue => issue.id.toString() === over.id.toString()
+        );
+      }
 
-    setColumns({
-      ...columns,
-      [activeContainer]: { ...columns[activeContainer], issues: sourceIssues },
-      [overContainer]: { ...columns[overContainer], issues: destIssues },
-    });
-
-    try {
-      await updateIssue({
+      const sourceIssues = [...columns[activeContainer].issues];
+      const destIssues = [...columns[overContainer].issues];
+      const sourceIndex = sourceIssues.findIndex(
+        i => i.id.toString() === activeId
+      );
+      sourceIssues.splice(sourceIndex, 1);
+      destIssues.splice(overIndex, 0, {
         ...activeIssue,
         status: overContainer,
       });
-    } catch (err) {
-      const error = err as Error;
-      toast(error.message || 'Failed to update issue');
-      setColumns(columns);
-    }
-  };
+
+      setColumns({
+        ...columns,
+        [activeContainer]: {
+          ...columns[activeContainer],
+          issues: sourceIssues,
+        },
+        [overContainer]: { ...columns[overContainer], issues: destIssues },
+      });
+
+      try {
+        await updateIssue({
+          ...activeIssue,
+          status: overContainer,
+        });
+      } catch (err) {
+        const error = err as Error;
+        toast(error.message || 'Failed to update issue');
+        setColumns(columns);
+      }
+    },
+    [columns]
+  );
 
   return (
     <div className="flex flex-col p-4">
@@ -123,7 +132,7 @@ export default function IssuesBoard() {
         collisionDetection={rectIntersection}
         onDragEnd={onDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row gap-4">
           {Object.entries(columns).map(([columnId, column]) => (
             <DroppableColumn
               key={columnId}

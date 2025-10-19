@@ -63,14 +63,16 @@ export default function IssueCard({ issue }: IssueCardProps) {
 
   return (
     <Card
-      className="bg-white p-2 gap-0 select-none w-full"
+      className="bg-white p-2 gap-0 select-none w-full rounded-sm"
       onClick={handleCardClick}
     >
-      <CardHeader className="flex flex-row items-center p-2 w-full">
+      <CardHeader className="flex flex-row items-center py-1 px-2 w-full">
         <div className="shrink-0">{getStatusIcon(issue.status)}</div>
-        <CardTitle className="items-center truncate">{issue.title}</CardTitle>
+        <CardTitle className="items-center truncate py-1">
+          {issue.title}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-1 p-2 pt-0 gap-1">
+      <CardContent className="flex flex-col lg:flex-row p-2 pt-0 gap-1">
         <PrioritySelect
           form={form}
           onValueChange={v => handleSave('priority', v)}
@@ -81,7 +83,7 @@ export default function IssueCard({ issue }: IssueCardProps) {
           <Button
             size="sm"
             variant="outline"
-            className="items-center text-xs !h-6 max-w-[150px]"
+            className="items-center text-xs !h-6 max-w-[150px] rounded-sm"
             onClick={handleProjectClick}
           >
             <div className="shrink-0">
