@@ -12,12 +12,12 @@ import { Link } from 'react-router';
 
 interface ColumnsProps {
   workspaceId?: number;
-  deleteProject: (id: number) => void;
+  onDeleteClick: (id: number) => void;
 }
 
 export const columns = ({
   workspaceId,
-  deleteProject,
+  onDeleteClick,
 }: ColumnsProps): ColumnDef<Project>[] => [
   {
     accessorKey: 'name',
@@ -43,7 +43,7 @@ export const columns = ({
             </DropdownMenuItem>
           </Link>
           <DropdownMenuItem
-            onClick={() => deleteProject(row.original.id)}
+            onClick={() => onDeleteClick(row.original.id)}
             asChild
           >
             <div>

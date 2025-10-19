@@ -8,6 +8,8 @@ import { SortingState } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { CreateProjectDialog } from '@/components/project/create-project-dialog';
 import { Plus } from 'lucide-react';
+import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
+import { Project } from '@/schemas/project';
 
 const COLUMN_TO_SORT_FIELD: Record<string, string> = {
   name: 'name',
@@ -20,6 +22,9 @@ export default function Page() {
   const { data: projects, deleteProject } = useProjects(Number(workspaceId));
 
   const [sorting, setSorting] = useState<SortingState>([]);
+  const navigate = useNavigate();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const sortParam = searchParams.get('sortBy');
   const sortOrderParam = searchParams.get('sortOrder');
 
@@ -31,11 +36,32 @@ export default function Page() {
     }
   }, [sortParam, sortOrderParam]);
 
-  const navigate = useNavigate();
-
   const handleOverview = (id: number) => {
     navigate(`/workspaces/${workspaceId}/projects/${id}`);
   };
+
+  const handleDeleteClick = useCallback(
+    (id: number) => {
+      const project = projects?.find(p => p.id === id);
+      if (project) {
+        setProjectToDelete(project);
+        setIsDeleteDialogOpen(true);
+      }
+    },
+    [projects]
+  );
+
+  const handleDelete = useCallback(async () => {
+    if (!projectToDelete) return;
+    try {
+      await deleteProject(projectToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setProjectToDelete(null);
+    } catch {
+      setIsDeleteDialogOpen(false);
+      setProjectToDelete(null);
+    }
+  }, [projectToDelete, deleteProject]);
 
   const handleSortingChange = useCallback(
     (newSorting: SortingState) => {
@@ -79,12 +105,23 @@ export default function Page() {
       }
     >
       <DataTable
-        columns={columns({ workspaceId: Number(workspaceId), deleteProject })}
+        columns={columns({
+          workspaceId: Number(workspaceId),
+          onDeleteClick: handleDeleteClick,
+        })}
         data={projects}
         sorting={sorting}
         onSortingChange={handleSortingChange}
         onRowClick={project => handleOverview(project.id)}
         isClickable={true}
+      />
+      <ConfirmationDialog
+        title="Delete Project"
+        description={`Are you sure you want to delete the project "${projectToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleDelete}
       />
     </BoardShell>
   );
