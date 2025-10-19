@@ -20,8 +20,13 @@ import {
 import { toast } from 'sonner';
 import { Columns } from '@/types/board';
 import DroppableColumn from '@/components/board/droppable-column';
+import { CreateIssueDialog } from './create-issue-dialog';
 
 export default function IssuesBoard() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogInitStatus, setDialogInitStatus] = useState<
+    IssueStatus | undefined
+  >(undefined);
   const { workspaceId, projectId: projectIdParam } = useParams<{
     workspaceId: string;
     projectId: string;
@@ -138,6 +143,11 @@ export default function IssuesBoard() {
     [columns]
   );
 
+  const openDialog = (initStatus: IssueStatus) => {
+    setDialogInitStatus(initStatus);
+    setDialogOpen(true);
+  };
+
   return (
     <div className="flex flex-col p-4">
       <DndContext
@@ -153,8 +163,14 @@ export default function IssuesBoard() {
               columnId={columnId}
               column={column}
               icon={getStatusIcon(columnId as IssueStatus)}
+              onOpenCreateDialog={openDialog}
             />
           ))}
+          <CreateIssueDialog
+            initStatus={dialogInitStatus}
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+          />
         </div>
         <DragOverlay zIndex={1000}>{activeNode}</DragOverlay>
       </DndContext>

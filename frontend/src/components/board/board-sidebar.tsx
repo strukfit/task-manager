@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useWorkspaceById } from '@/hooks/use-workspaces';
 import { CreateIssueDialog } from '../issue/create-issue-dialog';
+import { useState } from 'react';
 
 const navItems = [
   {
@@ -55,6 +56,7 @@ export default function BoardSidebar({
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const { workspace } = useWorkspaceById(Number(workspaceId));
   const { state } = useSidebar();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   if (!workspace) return null;
 
@@ -63,13 +65,14 @@ export default function BoardSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader
-        className={`border-b flex flex-row items-center justify-between ${isExpanded ? 'px-6 py-3' : ''}`}
+        className={`border-b flex flex-row items-center justify-between ${isExpanded ? 'px-2 py-3' : ''}`}
       >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className={`flex ${isExpanded ? 'max-w-[70%]' : 'max-w-[100%]'}`}
+              size="sm"
+              className={`flex rounded-sm ${isExpanded ? 'max-w-[70%]' : 'max-w-[100%]'}`}
             >
               <Building2 className="h-4 w-4" />
               {isExpanded && (
@@ -93,10 +96,12 @@ export default function BoardSidebar({
         {isExpanded && (
           <CreateIssueDialog
             trigger={
-              <Button>
+              <Button size="icon-sm" className="rounded-sm">
                 <SquarePen className="h-4 w-4 shrink-0" />
               </Button>
             }
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
           />
         )}
       </SidebarHeader>

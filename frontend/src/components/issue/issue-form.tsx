@@ -19,15 +19,18 @@ import { EditableText } from '@/components/common/editable-text';
 import { PrioritySelect } from './priority-select';
 import { StatusSelect } from './status-select';
 import { ProjectSelect } from './project-select';
+import { IssueStatus } from '@/constants/issue';
 
 interface IssueFormProps {
   issueId?: number;
+  initStatus?: IssueStatus;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 export default function IssueForm({
   issueId,
+  initStatus,
   onSuccess,
   onCancel,
 }: IssueFormProps) {
@@ -39,7 +42,8 @@ export default function IssueForm({
     createIssue,
     updateIssue,
   } = useIssueById(workspaceId, issueId);
-  const { data: projects } = useProjects(workspaceId);
+  const { data: projects, isLoading: projectsLoading } =
+    useProjects(workspaceId);
 
   const issueSchema = issueId ? editIssueSchema : createIssueSchema;
 
@@ -49,7 +53,7 @@ export default function IssueForm({
       title: issue?.title || '',
       description: issue?.description || '',
       priority: issue?.priority || 'NONE',
-      status: issue?.status || 'TO_DO',
+      status: issue?.status || initStatus || 'BACKLOG',
       projectId: issue?.project?.id || -1,
     },
   });
@@ -78,11 +82,7 @@ export default function IssueForm({
     }
   };
 
-  const onSubmit = async (data: IssueCreate | IssueEdit) => {
-    await handleSave(data);
-  };
-
-  if (issueLoading && issueId) {
+  if ((issueId && issueLoading) || projectsLoading) {
     return (
       <div className="flex justify-center items-center p-4">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -96,7 +96,7 @@ export default function IssueForm({
         <EditableText
           fieldName="title"
           onSave={async (field, value) => {
-            await form.setValue(field as keyof IssueEdit, value);
+            form.setValue(field as keyof IssueEdit, value);
           }}
           editor="input"
           placeholder="Issue title"
@@ -109,7 +109,7 @@ export default function IssueForm({
         <EditableText
           fieldName="description"
           onSave={async (field, value) => {
-            await form.setValue(field as keyof IssueEdit, value);
+            form.setValue(field as keyof IssueEdit, value);
           }}
           editor="textarea"
           placeholder="Add description..."
@@ -141,7 +141,7 @@ export default function IssueForm({
           <Button
             type="submit"
             size="sm"
-            onClick={form.handleSubmit(onSubmit)}
+            onClick={form.handleSubmit(handleSave)}
             disabled={issueLoading}
           >
             {issueId ? 'Save' : 'Create Issue'}

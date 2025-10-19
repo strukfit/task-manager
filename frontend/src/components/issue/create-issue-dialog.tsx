@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,27 +6,35 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import IssueForm from './issue-form';
+import { IssueStatus } from '@/constants/issue';
 
 interface CreateIssueDialogProps {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
+  initStatus?: IssueStatus;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function CreateIssueDialog({ trigger }: CreateIssueDialogProps) {
-  const [open, setOpen] = useState(false);
-
+export function CreateIssueDialog({
+  trigger,
+  initStatus,
+  open,
+  onOpenChange,
+}: CreateIssueDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="p-4">
         <DialogHeader>
           <DialogTitle className="text-base">New Issue</DialogTitle>
         </DialogHeader>
         <IssueForm
+          initStatus={initStatus}
           onSuccess={() => {
-            setOpen(false);
+            onOpenChange?.(false);
           }}
           onCancel={() => {
-            setOpen(false);
+            onOpenChange?.(false);
           }}
         />
       </DialogContent>
