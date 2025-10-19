@@ -164,7 +164,7 @@ export function DataTable<
   );
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-sm border">
       <Table>
         <TableHeader className="hidden md:table-header-group">
           {table.getHeaderGroups().map(headerGroup => (

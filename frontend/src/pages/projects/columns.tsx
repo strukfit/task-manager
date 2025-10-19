@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Project } from '@/schemas/project';
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, SquareChartGantt, Trash } from 'lucide-react';
 import { Link } from 'react-router';
 
 interface ColumnsProps {
@@ -33,12 +33,23 @@ export const columns = ({
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="start">
           <Link to={`/workspaces/${workspaceId}/projects/${row.original.id}`}>
-            <DropdownMenuItem>Overview</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <div>
+                <SquareChartGantt className="h-4 w-4" />
+                Overview
+              </div>
+            </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem onClick={() => deleteProject(row.original.id)}>
-            Delete
+          <DropdownMenuItem
+            onClick={() => deleteProject(row.original.id)}
+            asChild
+          >
+            <div>
+              <Trash className="h-4 w-4" />
+              Delete
+            </div>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

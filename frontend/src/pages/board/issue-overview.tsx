@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import BoardShell from '@/components/board/board-shell';
@@ -12,9 +12,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIssueById } from '@/hooks/use-issues';
 import { editIssueSchema, Issue, IssueEdit } from '@/schemas/issue';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Ellipsis, Loader2, Trash } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { IssuePriority, IssueStatus } from '@/constants/issue';
 import { useProjects } from '@/hooks/use-projects';
@@ -23,6 +23,14 @@ import remarkGfm from 'remark-gfm';
 import { PrioritySelect } from '@/components/issue/priority-select';
 import { StatusSelect } from '@/components/issue/status-select';
 import { ProjectSelect } from '@/components/issue/project-select';
+import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function IssueOverviewPage() {
   const { workspaceId: workspaceIdStr, issueId: issueIdStr } = useParams<{
@@ -35,8 +43,12 @@ export default function IssueOverviewPage() {
     issue,
     isLoading: issueLoading,
     updateIssue,
+    deleteIssue,
   } = useIssueById(workspaceId, issueId);
-  const { data: projects } = useProjects(workspaceId);
+  const { data: projects, isLoading: projectsLoading } =
+    useProjects(workspaceId);
+  const navigate = useNavigate();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const form = useForm<IssueEdit>({
     resolver: zodResolver(editIssueSchema),
@@ -63,37 +75,51 @@ export default function IssueOverviewPage() {
     }
   }, [issue, form]);
 
-  const handleSave = async (field: keyof IssueEdit, value: string) => {
+  const handleSave = useCallback(
+    async (field: keyof IssueEdit, value: string) => {
+      if (!issue) return;
+      try {
+        const updatedIssue: IssueEdit = {
+          id: issue.id,
+          title: field === 'title' ? value.trim() : issue.title,
+          description:
+            field === 'description'
+              ? value.trim() || undefined
+              : issue.description,
+          priority:
+            field === 'priority' ? (value as IssuePriority) : issue.priority,
+          status: field === 'status' ? (value as IssueStatus) : issue.status,
+          projectId:
+            field === 'projectId' ? Number(value) : issue.project?.id || -1,
+        };
+        await updateIssue(updatedIssue);
+        // toast.success(`${field} updated successfully`);
+      } catch {
+        toast.error(
+          `Failed to update ${field === 'projectId' ? 'project' : field}`
+        );
+        if (field === 'projectId') {
+          form.setValue(field, issue.project?.id || -1);
+          return;
+        }
+        form.setValue(field, issue[field as keyof Issue] as string);
+      }
+    },
+    [issue, form]
+  );
+
+  const handleDelete = useCallback(async () => {
     if (!issue) return;
     try {
-      const updatedIssue: IssueEdit = {
-        id: issue.id,
-        title: field === 'title' ? value.trim() : issue.title,
-        description:
-          field === 'description'
-            ? value.trim() || undefined
-            : issue.description,
-        priority:
-          field === 'priority' ? (value as IssuePriority) : issue.priority,
-        status: field === 'status' ? (value as IssueStatus) : issue.status,
-        projectId:
-          field === 'projectId' ? Number(value) : issue.project?.id || -1,
-      };
-      await updateIssue(updatedIssue);
-      // toast.success(`${field} updated successfully`);
-    } catch (error) {
-      toast.error(
-        `Failed to update ${field === 'projectId' ? 'project' : field}`
-      );
-      if (field === 'projectId') {
-        form.setValue(field, issue.project?.id || -1);
-        return;
-      }
-      form.setValue(field, issue[field as keyof Issue] as string);
+      await deleteIssue(issue.id);
+      toast.success('Issue deleted successfully');
+      navigate(`/workspaces/${workspaceId}`);
+    } catch {
+      toast.error('Failed to delete issue');
     }
-  };
+  }, [issue]);
 
-  if (issueLoading) {
+  if (issueLoading || projectsLoading) {
     return (
       <div className="flex justify-center items-center p-4">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -124,7 +150,7 @@ export default function IssueOverviewPage() {
       <FormProvider {...form}>
         <div className="flex flex-1 flex-col md:flex-row gap-4 p-4">
           <div className="flex-1 w-[85%]">
-            <Card className="flex-1 flex flex-col h-full">
+            <Card className="flex-1 flex flex-col rounded-sm h-full">
               <CardHeader>
                 <CardTitle className="text-2xl">
                   <EditableText
@@ -158,8 +184,28 @@ export default function IssueOverviewPage() {
             </Card>
           </div>
           <div className="flex flex-col w-[15%]">
-            <Card className="flex-1 flex flex-col">
-              <CardContent className="space-y-4">
+            <Card className="flex-1 flex flex-col rounded-sm py-2 gap-0">
+              <CardHeader className="flex flex-row justify-end px-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8">
+                      <Ellipsis className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem
+                      onClick={() => setIsDeleteDialogOpen(true)}
+                      asChild
+                    >
+                      <div>
+                        <Trash className="h-4 w-4" />
+                        Delete issue
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardHeader>
+              <CardContent className="px-4">
                 <div className="flex flex-1 flex-col gap-4">
                   <div className="flex flex-1 flex-col gap-2">
                     <p className="font-bold select-none">Properties</p>
@@ -189,6 +235,14 @@ export default function IssueOverviewPage() {
           </div>
         </div>
       </FormProvider>
+      <ConfirmationDialog
+        title="Delete Issue"
+        description={`Are you sure you want to delete the issue "${issue?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDelete}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      />
     </BoardShell>
   );
 }

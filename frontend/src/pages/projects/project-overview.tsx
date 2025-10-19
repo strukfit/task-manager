@@ -13,13 +13,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProjectById } from '@/hooks/use-projects';
 import { editProjectSchema, Project } from '@/schemas/project';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Ellipsis, Loader2, Trash } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { EditableText } from '@/components/common/editable-text';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 
 export default function ProjectOverviewPage() {
   const { workspaceId, projectId } = useParams<{
@@ -29,10 +37,13 @@ export default function ProjectOverviewPage() {
   const {
     project,
     updateProject,
+    deleteProject,
     isLoading: projectLoading,
   } = useProjectById(Number(workspaceId), Number(projectId));
 
   const [activeTab, setActiveTab] = useState<'overview' | 'issues'>('overview');
+  const navigate = useNavigate();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(editProjectSchema),
@@ -67,6 +78,17 @@ export default function ProjectOverviewPage() {
       form.setValue(field, project[field as keyof Project] as string);
     }
   };
+
+  const handleDelete = useCallback(async () => {
+    if (!project) return;
+    try {
+      await deleteProject(project.id);
+      toast.success('Project deleted successfully');
+      navigate(`/workspaces/${workspaceId}/projects`);
+    } catch {
+      toast.error('Failed to delete project');
+    }
+  }, [project]);
 
   if (projectLoading) {
     return (
@@ -118,10 +140,30 @@ export default function ProjectOverviewPage() {
         <div className="flex flex-1 flex-col md:flex-row gap-4 p-4">
           <Tabs value={activeTab} className="w-full">
             <TabsContent value="overview">
-              <div className="flex-1">
-                <Card className="flex-1 flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">
+              <div className="flex-1 h-full">
+                <Card className="flex-1 flex flex-col rounded-sm h-full pt-2 pb-6">
+                  <CardHeader className="p-0">
+                    <div className="flex flex-row justify-end px-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8">
+                            <Ellipsis className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem
+                            onClick={() => setIsDeleteDialogOpen(true)}
+                            asChild
+                          >
+                            <div>
+                              <Trash className="h-4 w-4" />
+                              Delete project
+                            </div>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <CardTitle className="text-2xl px-6">
                       <EditableText<Project>
                         fieldName="name"
                         onSave={handleSave}
@@ -157,6 +199,14 @@ export default function ProjectOverviewPage() {
           </Tabs>
         </div>
       </FormProvider>
+      <ConfirmationDialog
+        title="Delete Issue"
+        description={`Are you sure you want to delete the project "${project?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDelete}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      />
     </BoardShell>
   );
 }
