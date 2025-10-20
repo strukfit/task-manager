@@ -1,6 +1,5 @@
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import BoardShell from '@/components/board/board-shell';
 import IssuesBoard from '@/components/issue/issues-board';
 import {
   Breadcrumb,
@@ -28,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
+import { useBoardLayout } from '@/components/board/board-layout';
 
 export default function ProjectOverviewPage() {
   const { workspaceId, projectId } = useParams<{
@@ -44,6 +44,7 @@ export default function ProjectOverviewPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'issues'>('overview');
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { setHeader } = useBoardLayout();
 
   const form = useForm({
     resolver: zodResolver(editProjectSchema),
@@ -53,6 +54,42 @@ export default function ProjectOverviewPage() {
       description: project?.description || '',
     },
   });
+
+  useEffect(() => {
+    setHeader(
+      <div className="flex flex-row items-center gap-2">
+        <Breadcrumb className="ml-2">
+          <BreadcrumbList>
+            <BreadcrumbItem className="hidden md:block">
+              <BreadcrumbPage>Workspace</BreadcrumbPage>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbItem>
+              <Link to={`/workspaces/${workspaceId}/projects`}>Projects</Link>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{project?.name || 'Project'}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <Tabs value={activeTab}>
+          <TabsList>
+            <TabsTrigger
+              value="overview"
+              onClick={() => setActiveTab('overview')}
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="issues" onClick={() => setActiveTab('issues')}>
+              Issues
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+    );
+    return () => setHeader(null);
+  }, [setHeader, project, workspaceId, activeTab]);
 
   useEffect(() => {
     if (project) {
@@ -99,43 +136,7 @@ export default function ProjectOverviewPage() {
   }
 
   return (
-    <BoardShell
-      header={
-        <div className="flex flex-row items-center gap-2">
-          <Breadcrumb className="ml-2">
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbPage>Workspace</BreadcrumbPage>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <Link to={`/workspaces/${workspaceId}/projects`}>Projects</Link>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{project?.name || 'Project'}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <Tabs value={activeTab}>
-            <TabsList>
-              <TabsTrigger
-                value="overview"
-                onClick={() => setActiveTab('overview')}
-              >
-                Overview
-              </TabsTrigger>
-              <TabsTrigger
-                value="issues"
-                onClick={() => setActiveTab('issues')}
-              >
-                Issues
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      }
-    >
+    <>
       <FormProvider {...form}>
         <div className="flex flex-1 flex-col md:flex-row gap-4 p-4">
           <Tabs value={activeTab} className="w-full">
@@ -207,6 +208,6 @@ export default function ProjectOverviewPage() {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       />
-    </BoardShell>
+    </>
   );
 }

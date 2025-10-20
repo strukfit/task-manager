@@ -23,8 +23,8 @@ import { Button } from '../ui/button';
 import {
   Building2,
   ChevronDown,
-  ClipboardList,
-  FolderKanban,
+  Folders,
+  SquareKanban,
   SquarePen,
 } from 'lucide-react';
 import { useWorkspaceById } from '@/hooks/use-workspaces';
@@ -38,12 +38,12 @@ const navItems = [
       {
         title: 'Issues',
         url: (workspaceId: number) => `/workspaces/${workspaceId}`,
-        icon: <ClipboardList className="h-4 w-4" />,
+        icon: <SquareKanban className="h-4 w-4" />,
       },
       {
         title: 'Projects',
         url: (workspaceId: number) => `/workspaces/${workspaceId}/projects`,
-        icon: <FolderKanban className="h-4 w-4" />,
+        icon: <Folders className="h-4 w-4" />,
       },
     ],
   },

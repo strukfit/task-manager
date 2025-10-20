@@ -1,10 +1,14 @@
-import BoardShell from '@/components/board/board-shell';
+import { useBoardLayout } from '@/components/board/board-layout';
 import IssuesBoard from '@/components/issue/issues-board';
+import { useEffect } from 'react';
 
-export default function Page() {
-  return (
-    <BoardShell>
-      <IssuesBoard />
-    </BoardShell>
-  );
+export default function BoardPage() {
+  const { setHeader } = useBoardLayout();
+
+  useEffect(() => {
+    setHeader(null);
+    return () => setHeader(null);
+  }, [setHeader]);
+
+  return <IssuesBoard />;
 }

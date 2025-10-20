@@ -17,6 +17,7 @@ import ProjectOverviewPage from './pages/projects/project-overview';
 import IssueOverviewPage from './pages/board/issue-overview';
 import PasswordResetRequestPage from './pages/auth/password-reset-request';
 import PasswordResetPage from './pages/auth/password-reset';
+import BoardLayout from './components/board/board-layout';
 
 const queryClient = new QueryClient();
 
@@ -40,19 +41,15 @@ createRoot(document.getElementById('root')!).render(
               path="/workspaces/:workspaceId/edit"
               element={<WorkspaceFormPage />}
             />
-            <Route path="/workspaces/:workspaceId" element={<BoardPage />} />
-            <Route
-              path="/workspaces/:workspaceId/projects"
-              element={<ProjectsPage />}
-            />
-            <Route
-              path="/workspaces/:workspaceId/projects/:projectId"
-              element={<ProjectOverviewPage />}
-            />
-            <Route
-              path="/workspaces/:workspaceId/issues/:issueId"
-              element={<IssueOverviewPage />}
-            />
+            <Route path="/workspaces/:workspaceId" element={<BoardLayout />}>
+              <Route index element={<BoardPage />} />
+              <Route path="projects" element={<ProjectsPage />} />
+              <Route
+                path="projects/:projectId"
+                element={<ProjectOverviewPage />}
+              />
+              <Route path="issues/:issueId" element={<IssueOverviewPage />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import BoardShell from '@/components/board/board-shell';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -31,6 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useBoardLayout } from '@/components/board/board-layout';
 
 export default function IssueOverviewPage() {
   const { workspaceId: workspaceIdStr, issueId: issueIdStr } = useParams<{
@@ -49,6 +49,7 @@ export default function IssueOverviewPage() {
     useProjects(workspaceId);
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { setHeader } = useBoardLayout();
 
   const form = useForm<IssueEdit>({
     resolver: zodResolver(editIssueSchema),
@@ -61,6 +62,27 @@ export default function IssueOverviewPage() {
       projectId: issue?.project?.id || -1,
     },
   });
+
+  useEffect(() => {
+    setHeader(
+      <Breadcrumb className="ml-2">
+        <BreadcrumbList>
+          <BreadcrumbItem className="hidden md:block">
+            <BreadcrumbPage>Workspace</BreadcrumbPage>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator className="hidden md:block" />
+          <BreadcrumbItem>
+            <Link to={`/workspaces/${workspaceId}`}>Board</Link>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{issue?.title || 'Issue'}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    );
+    return () => setHeader(null);
+  }, [setHeader, issue, workspaceId]);
 
   useEffect(() => {
     if (issue) {
@@ -128,25 +150,7 @@ export default function IssueOverviewPage() {
   }
 
   return (
-    <BoardShell
-      header={
-        <Breadcrumb className="ml-2">
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbPage>Workspace</BreadcrumbPage>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <Link to={`/workspaces/${workspaceId}`}>Board</Link>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{issue?.title || 'Issue'}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      }
-    >
+    <>
       <FormProvider {...form}>
         <div className="flex flex-1 flex-col md:flex-row gap-4 p-4">
           <div className="flex-1 w-[85%]">
@@ -243,6 +247,6 @@ export default function IssueOverviewPage() {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       />
-    </BoardShell>
+    </>
   );
 }

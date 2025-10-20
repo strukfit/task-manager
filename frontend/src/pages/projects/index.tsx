@@ -1,4 +1,3 @@
-import BoardShell from '@/components/board/board-shell';
 import { DataTable } from '@/components/common/data-table';
 import { columns } from './columns';
 import { useProjects } from '@/hooks/use-projects';
@@ -10,12 +9,13 @@ import { CreateProjectDialog } from '@/components/project/create-project-dialog'
 import { Plus } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 import { Project } from '@/schemas/project';
+import { useBoardLayout } from '@/components/board/board-layout';
 
 const COLUMN_TO_SORT_FIELD: Record<string, string> = {
   name: 'name',
 };
 
-export default function Page() {
+export default function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -25,8 +25,26 @@ export default function Page() {
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const { setHeader } = useBoardLayout();
+
   const sortParam = searchParams.get('sortBy');
   const sortOrderParam = searchParams.get('sortOrder');
+
+  useEffect(() => {
+    setHeader(
+      <div className="ml-auto">
+        <CreateProjectDialog
+          trigger={
+            <Button>
+              <Plus className="h-4 w-4" />
+              New Project
+            </Button>
+          }
+        />
+      </div>
+    );
+    return () => setHeader(null);
+  }, [setHeader]);
 
   useEffect(() => {
     if (sortParam && (sortOrderParam === 'asc' || sortOrderParam === 'desc')) {
@@ -90,20 +108,7 @@ export default function Page() {
   );
 
   return (
-    <BoardShell
-      header={
-        <div className="ml-auto">
-          <CreateProjectDialog
-            trigger={
-              <Button>
-                <Plus className="h-4 w-4" />
-                New Project
-              </Button>
-            }
-          />
-        </div>
-      }
-    >
+    <>
       <DataTable
         columns={columns({
           workspaceId: Number(workspaceId),
@@ -123,6 +128,6 @@ export default function Page() {
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDelete}
       />
-    </BoardShell>
+    </>
   );
 }
