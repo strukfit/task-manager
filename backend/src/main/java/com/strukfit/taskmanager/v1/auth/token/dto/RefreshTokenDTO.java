@@ -1,4 +1,4 @@
-package com.strukfit.taskmanager.v1.auth.refreshtoken.dto;
+package com.strukfit.taskmanager.v1.auth.token.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

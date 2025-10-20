@@ -18,12 +18,15 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
 @Data
+@Table(indexes = { @Index(name = "idx_issue_workspace_project", columnList = "workspace_id,project_id") })
 public class Issue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
