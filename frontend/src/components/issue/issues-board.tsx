@@ -149,14 +149,14 @@ export default function IssuesBoard() {
   };
 
   return (
-    <div className="flex flex-col p-4">
+    <div className="flex flex-col">
       <DndContext
         sensors={sensors}
         collisionDetection={rectIntersection}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row gap-2">
           {Object.entries(columns).map(([columnId, column]) => (
             <DroppableColumn
               key={columnId}

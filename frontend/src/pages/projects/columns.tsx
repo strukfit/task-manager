@@ -12,7 +12,7 @@ import { Link } from 'react-router';
 
 interface ColumnsProps {
   workspaceId?: number;
-  onDeleteClick: (id: number) => void;
+  onDeleteClick: (project: Project) => void;
 }
 
 export const columns = ({
@@ -42,10 +42,7 @@ export const columns = ({
               </div>
             </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem
-            onClick={() => onDeleteClick(row.original.id)}
-            asChild
-          >
+          <DropdownMenuItem onClick={() => onDeleteClick(row.original)} asChild>
             <div>
               <Trash className="h-4 w-4" />
               Delete

@@ -102,9 +102,7 @@ const generateDeleteWorkspaceMutation = (queryClient: QueryClient) =>
       if (previousWorkspaces) {
         queryClient.setQueryData<WorkspacesResponse>(
           QUERY_KEYS.workspacesList(),
-          {
-            ...previousWorkspaces.filter(w => w.id !== workspaceId),
-          }
+          previousWorkspaces.filter(w => w.id !== workspaceId)
         );
       }
 

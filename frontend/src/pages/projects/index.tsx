@@ -59,8 +59,7 @@ export default function ProjectsPage() {
   };
 
   const handleDeleteClick = useCallback(
-    (id: number) => {
-      const project = projects?.find(p => p.id === id);
+    (project: Project) => {
       if (project) {
         setProjectToDelete(project);
         setIsDeleteDialogOpen(true);
