@@ -8,6 +8,8 @@ export const API_ROUTES = {
     login: '/auth/login',
     signup: '/auth/signup',
     refresh: '/auth/refresh',
+    requestPasswordReset: '/auth/password/reset/request',
+    resetPassword: '/auth/password/reset/complete',
   },
   workspaces: {
     workspaces: '/workspaces',

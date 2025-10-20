@@ -1,4 +1,4 @@
-import { login, signup } from '@/api/auth';
+import { login, requestPasswordReset, resetPassword, signup } from '@/api/auth';
 import { AuthResponse } from '@/schemas/auth';
 import { User } from '@/schemas/user';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -52,10 +52,20 @@ export const useAuth = () => {
     onSuccess: handleAuthSuccess,
   });
 
+  const requestPasswordResetMutation = useMutation({
+    mutationFn: requestPasswordReset,
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: resetPassword,
+  });
+
   return {
     user,
     login: loginMutation.mutateAsync,
     signup: signupMutation.mutateAsync,
+    requestPasswordReset: requestPasswordResetMutation.mutateAsync,
+    resetPassword: resetPasswordMutation.mutateAsync,
     logout,
     isLoginLoading: loginMutation.isPending,
     isSignupLoading: signupMutation.isPending,

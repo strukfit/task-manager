@@ -15,6 +15,8 @@ import WorkspaceFormPage from './pages/workspaces/workspace-form';
 import { ProtectedRoute } from './components/auth/protected-route';
 import ProjectOverviewPage from './pages/projects/project-overview';
 import IssueOverviewPage from './pages/board/issue-overview';
+import PasswordResetRequestPage from './pages/auth/password-reset-request';
+import PasswordResetPage from './pages/auth/password-reset';
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,11 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<AuthPage type="login" />} />
           <Route path="/signup" element={<AuthPage type="signup" />} />
+          <Route
+            path="/reset-password-request"
+            element={<PasswordResetRequestPage />}
+          />
+          <Route path="/reset-password" element={<PasswordResetPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/workspaces" element={<Workspaces />} />
             <Route path="/workspaces/create" element={<WorkspaceFormPage />} />
