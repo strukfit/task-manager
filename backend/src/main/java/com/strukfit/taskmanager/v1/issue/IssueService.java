@@ -1,21 +1,31 @@
 package com.strukfit.taskmanager.v1.issue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.strukfit.taskmanager.v1.issue.dto.IssueCreateDTO;
 import com.strukfit.taskmanager.v1.issue.dto.IssueDTO;
+import com.strukfit.taskmanager.v1.issue.dto.IssueQueryDTO;
 import com.strukfit.taskmanager.v1.issue.dto.IssueUpdateDTO;
+import com.strukfit.taskmanager.v1.issue.enums.Priority;
 import com.strukfit.taskmanager.v1.issue.enums.Status;
 import com.strukfit.taskmanager.v1.project.Project;
 import com.strukfit.taskmanager.v1.project.ProjectRepository;
 import com.strukfit.taskmanager.v1.user.User;
 import com.strukfit.taskmanager.v1.workspace.Workspace;
 import com.strukfit.taskmanager.v1.workspace.WorkspaceRepository;
+
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 @Service
 public class IssueService {
@@ -73,15 +83,109 @@ public class IssueService {
         issue.setProject(project);
     }
 
-    public Map<Status, List<IssueDTO>> getByWorkspaceGroupedByStatus(Long workspaceId, User user, Long projectId) {
+    private Expression<?> getSortField(String sortBy, Root<Issue> root, CriteriaBuilder cb) {
+        if ("priority".equalsIgnoreCase(sortBy)) {
+            Expression<String> priority = root.get("priority");
+            CriteriaBuilder.Case<Integer> priorityCase = cb.selectCase();
+            for (Priority p : Priority.values()) {
+                priorityCase.when(cb.equal(priority, p.name()), p.ordinal());
+            }
+            return priorityCase.otherwise(0);
+        }
+
+        switch (sortBy.toLowerCase()) {
+            case "title":
+                return root.get("title");
+            case "status":
+                return root.get("status");
+            case "createdat":
+                return root.get("createdAt");
+            case "updatedat":
+                return root.get("updatedAt");
+            default:
+                return root.get("createdAt");
+        }
+
+    }
+
+    private Specification<Issue> buildSpecification(Workspace workspace,
+            List<Long> projectIds,
+            List<Status> statuses,
+            List<String> priorities,
+            String sortBy,
+            String sortOrder) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("workspace"), workspace));
+
+            if (projectIds != null && !projectIds.isEmpty()) {
+                List<Predicate> projectPredicates = new ArrayList<>();
+                if (projectIds.contains(-1L)) {
+                    projectPredicates.add(cb.isNull(root.get("project")));
+                }
+                if (projectIds.stream().anyMatch(id -> id != -1)) {
+                    projectPredicates
+                            .add(root.get("project").get("id").in(projectIds.stream().filter(id -> id != -1).toList()));
+                }
+                predicates.add(cb.or(projectPredicates.toArray(new Predicate[0])));
+            }
+
+            if (statuses != null && !statuses.isEmpty()) {
+                predicates.add(root.get("status").in(statuses));
+            }
+
+            if (priorities != null && !priorities.isEmpty()) {
+                predicates.add(root.get("priority").in(priorities));
+            }
+
+            if (query != null && sortBy != null && !sortBy.isEmpty()) {
+                Expression<?> sortField = getSortField(sortBy, root, cb);
+                Order order = "asc".equalsIgnoreCase(sortOrder) ? cb.asc(sortField) : cb.desc(sortField);
+                query.orderBy(order);
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    public Map<String, List<IssueDTO>> getByWorkspace(Long workspaceId, User user, IssueQueryDTO dto) {
         Workspace workspace = getWorkspaceById(workspaceId, user);
-        List<Issue> issues = projectId != null
-                ? issueRepository.findByWorkspaceAndProject(workspace, projectRepository.findById(projectId)
-                        .orElseThrow(() -> new RuntimeException("Project not found")))
-                : issueRepository.findByWorkspace(workspace);
-        return issues.stream()
-                .collect(Collectors.groupingBy(Issue::getStatus,
-                        Collectors.mapping(issueMapper::toDTO, Collectors.toList())));
+
+        List<Long> projectIds = dto.getProjectIds();
+        List<Status> statuses = dto.getStatuses();
+        List<String> priorities = dto.getPriorities();
+        String sortBy = dto.getSortBy();
+        String sortOrder = dto.getSortOrder();
+        String groupBy = dto.getGroupBy();
+
+        Specification<Issue> spec = buildSpecification(workspace, projectIds, statuses, priorities, sortBy, sortOrder);
+        List<Issue> issues = issueRepository.findAll(spec);
+
+        String groupByLowerCase = groupBy.toLowerCase();
+
+        if ("status".equals(groupByLowerCase)) {
+            return issues.stream()
+                    .collect(Collectors.groupingBy(
+                            issue -> issue.getStatus().name(),
+                            Collectors.mapping(issueMapper::toDTO, Collectors.toList())));
+        }
+
+        if ("priority".equals(groupByLowerCase)) {
+            return issues.stream()
+                    .collect(Collectors.groupingBy(
+                            issue -> issue.getPriority().name(),
+                            Collectors.mapping(issueMapper::toDTO, Collectors.toList())));
+
+        }
+
+        if ("project".equals(groupByLowerCase)) {
+            return issues.stream()
+                    .collect(Collectors.groupingBy(
+                            issue -> issue.getProject() != null ? String.valueOf(issue.getProject().getName()) : "None",
+                            Collectors.mapping(issueMapper::toDTO, Collectors.toList())));
+        }
+
+        return Map.of("all", issues.stream().map(issueMapper::toDTO).collect(Collectors.toList()));
     }
 
     public Issue getById(Long workspaceId, Long id, User user) {
