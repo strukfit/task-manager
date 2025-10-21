@@ -13,7 +13,7 @@ public class IssueQueryDTO {
     private List<Status> statuses;
     private List<String> priorities;
 
-    @Pattern(regexp = "title|status|priority|createdAt|updatedAt")
+    @Pattern(regexp = "title|status|priority|createdAt")
     private String sortBy = "createdAt";
 
     @Pattern(regexp = "asc|desc")

@@ -1,11 +1,15 @@
-import { ApiError, ApiResponse } from '@/types/common';
+import { ApiError, ApiResponse, BaseParamsConfig } from '@/types/common';
 import apiClient from './api-client';
 import { API_ROUTES } from '@/constants/api';
 import { Issue, IssueCreate, IssueEdit, IssuesResponse } from '@/schemas/issue';
+import { IssuePriority, IssueStatus } from '@/constants/issue';
 
-export type GetIssuesParams = {
-  projectId?: number;
-};
+export interface GetIssuesParams extends BaseParamsConfig {
+  projectIds?: number[];
+  statuses?: IssueStatus[];
+  priorities?: IssuePriority[];
+  groupBy?: 'status' | 'priority' | 'project' | 'none';
+}
 
 export const getIssues = async (
   workspaceId: number,

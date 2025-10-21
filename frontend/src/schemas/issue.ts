@@ -26,10 +26,7 @@ export const editIssueSchema = issueSchema.omit({ project: true }).extend({
   projectId: z.number().optional(),
 });
 
-export const issuesResponseSchema = z.record(
-  z.enum(ISSUE_STATUSES),
-  z.array(issueSchema)
-);
+export const issuesResponseSchema = z.record(z.string(), z.array(issueSchema));
 
 export type IssuesResponse = z.infer<typeof issuesResponseSchema>;
 export type Issue = z.infer<typeof issueSchema>;

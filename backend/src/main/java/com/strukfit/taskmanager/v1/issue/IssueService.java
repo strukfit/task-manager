@@ -100,8 +100,6 @@ public class IssueService {
                 return root.get("status");
             case "createdat":
                 return root.get("createdAt");
-            case "updatedat":
-                return root.get("updatedAt");
             default:
                 return root.get("createdAt");
         }
