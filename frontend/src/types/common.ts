@@ -8,7 +8,11 @@ export interface ApiResponse<T> {
   message: string;
 }
 
-export interface BaseParamsConfig {
+interface SortParamsConfig {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+export type SortParams = keyof SortParamsConfig;
+
+export interface BaseParamsConfig extends SortParamsConfig {}

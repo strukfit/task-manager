@@ -1,3 +1,4 @@
+import { IssueCreate } from '@/schemas/issue';
 import {
   Dialog,
   DialogContent,
@@ -6,30 +7,29 @@ import {
   DialogTrigger,
 } from '../ui/dialog';
 import IssueForm from './issue-form';
-import { IssueStatus } from '@/constants/issue';
 
 interface CreateIssueDialogProps {
   trigger?: React.ReactNode;
-  initStatus?: IssueStatus;
+  initValues?: Partial<IssueCreate>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
 export function CreateIssueDialog({
   trigger,
-  initStatus,
+  initValues,
   open,
   onOpenChange,
 }: CreateIssueDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="p-4">
+      <DialogContent className="p-4 w-fit min-w-xl !max-w-full">
         <DialogHeader>
           <DialogTitle className="text-base">New Issue</DialogTitle>
         </DialogHeader>
         <IssueForm
-          initStatus={initStatus}
+          initValues={initValues}
           onSuccess={() => {
             onOpenChange?.(false);
           }}

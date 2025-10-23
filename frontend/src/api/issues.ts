@@ -2,13 +2,18 @@ import { ApiError, ApiResponse, BaseParamsConfig } from '@/types/common';
 import apiClient from './api-client';
 import { API_ROUTES } from '@/constants/api';
 import { Issue, IssueCreate, IssueEdit, IssuesResponse } from '@/schemas/issue';
-import { IssuePriority, IssueStatus } from '@/constants/issue';
+import { IssueGroupBy, IssuePriority, IssueStatus } from '@/constants/issue';
 
-export interface GetIssuesParams extends BaseParamsConfig {
+interface FilterParams {
   projectIds?: number[];
   statuses?: IssueStatus[];
   priorities?: IssuePriority[];
-  groupBy?: 'status' | 'priority' | 'project' | 'none';
+}
+
+export type IssueFilterParams = keyof FilterParams;
+
+export interface GetIssuesParams extends BaseParamsConfig, FilterParams {
+  groupBy?: IssueGroupBy;
 }
 
 export const getIssues = async (

@@ -9,19 +9,16 @@ import { Column } from '@/types/board';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Plus } from 'lucide-react';
-import { IssueStatus } from '@/constants/issue';
 
 interface DroppableColumnProps {
   columnId: string;
   column: Column;
-  icon: React.ReactNode;
-  onOpenCreateDialog?: (initStatus: IssueStatus) => void;
+  onOpenCreateDialog?: (initValue: string) => void;
 }
 
 export default function DroppableColumn({
   columnId,
   column,
-  icon,
   onOpenCreateDialog,
 }: DroppableColumnProps) {
   const { isOver, setNodeRef } = useDroppable({
@@ -38,23 +35,23 @@ export default function DroppableColumn({
       <Card
         className={`bg-gray-50 flex flex-col h-full rounded-sm lg:w-sm py-4 gap-2 ${isOver ? 'bg-blue-100' : ''}`}
       >
-        <CardHeader className="px-4">
-          <CardTitle className="flex flex-row items-center justify-between select-none">
+        <CardHeader className="flex flex-row items-center justify-between px-4">
+          <CardTitle className="flex flex-row select-none py-1 truncate">
             <div className="flex flex-row gap-2">
-              {icon}
+              {column.icon}
               {column.name}
             </div>
-            <div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-sm rounded-sm h-7 w-7"
-                onClick={() => onOpenCreateDialog?.(column.id)}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
           </CardTitle>
+          <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-sm rounded-sm h-7 w-7"
+              onClick={() => onOpenCreateDialog?.(column.id)}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent ref={setNodeRef} className="flex-1 min-h-[200px] px-4">
           <SortableContext

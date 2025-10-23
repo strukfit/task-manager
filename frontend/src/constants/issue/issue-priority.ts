@@ -1,11 +1,3 @@
-export const ISSUE_PRIORITY_LABELS = {
-  NONE: 'No Priority',
-  LOW: 'Low',
-  MEDIUM: 'Medium',
-  HIGH: 'High',
-  CRITICAL: 'Critical',
-} as const;
-
 export const ISSUE_PRIORITIES = [
   'NONE',
   'LOW',
@@ -15,3 +7,11 @@ export const ISSUE_PRIORITIES = [
 ] as const;
 
 export type IssuePriority = (typeof ISSUE_PRIORITIES)[number];
+
+export const ISSUE_PRIORITY_LABELS: Record<IssuePriority, string> = {
+  NONE: 'No Priority',
+  LOW: 'Low',
+  MEDIUM: 'Medium',
+  HIGH: 'High',
+  CRITICAL: 'Critical',
+} as const;

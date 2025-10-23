@@ -1,10 +1,10 @@
-import { IssueStatus } from '@/constants/issue';
 import { Issue } from '@/schemas/issue';
 
 export interface Column {
-  id: IssueStatus;
+  id: string;
   name: string;
+  icon?: React.ReactNode;
   issues: Issue[];
 }
 
-export type Columns = Record<IssueStatus, Column>;
+export type Columns = Record<string, Column>;

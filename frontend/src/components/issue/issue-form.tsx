@@ -19,18 +19,17 @@ import { EditableText } from '@/components/common/editable-text';
 import { PrioritySelect } from './priority-select';
 import { StatusSelect } from './status-select';
 import { ProjectSelect } from './project-select';
-import { IssueStatus } from '@/constants/issue';
 
 interface IssueFormProps {
   issueId?: number;
-  initStatus?: IssueStatus;
+  initValues?: Partial<IssueCreate>;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 export default function IssueForm({
   issueId,
-  initStatus,
+  initValues,
   onSuccess,
   onCancel,
 }: IssueFormProps) {
@@ -50,11 +49,11 @@ export default function IssueForm({
   const form = useForm<IssueCreate | IssueEdit>({
     resolver: zodResolver(issueSchema),
     defaultValues: {
-      title: issue?.title || '',
-      description: issue?.description || '',
-      priority: issue?.priority || 'NONE',
-      status: issue?.status || initStatus || 'BACKLOG',
-      projectId: issue?.project?.id || -1,
+      title: issue?.title || initValues?.title || '',
+      description: issue?.description || initValues?.description || '',
+      priority: issue?.priority || initValues?.priority || 'NONE',
+      status: issue?.status || initValues?.status || 'BACKLOG',
+      projectId: issue?.project?.id || initValues?.projectId || -1,
     },
   });
 
