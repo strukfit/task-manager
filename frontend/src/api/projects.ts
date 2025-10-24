@@ -1,4 +1,4 @@
-import { ApiError, ApiResponse } from '@/types/common';
+import { ApiError, ApiResponse, PaginatedResponse } from '@/types/common';
 import apiClient from './api-client';
 import { API_ROUTES } from '@/constants/api';
 import {
@@ -12,10 +12,10 @@ export const getProjects = async (
   workspaceId: number
 ): Promise<ProjectsResponse> => {
   try {
-    const response = await apiClient.get<ApiResponse<ProjectsResponse>>(
+    const response = await apiClient.get<PaginatedResponse<ProjectsResponse>>(
       API_ROUTES.projects.projects(workspaceId)
     );
-    return response.data.data;
+    return response.data.data.content;
   } catch (error) {
     const axiosError = error as ApiError;
     throw new Error(
