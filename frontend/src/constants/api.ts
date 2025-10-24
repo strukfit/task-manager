@@ -1,6 +1,7 @@
 const rawBase = import.meta.env.BASE_URL ?? '/';
 const normalizedBase = rawBase.endsWith('/') ? rawBase.slice(0, -1) : rawBase;
 
+export const ENV = import.meta.env.VITE_APP_ENV || 'production';
 export const BASE_URL = `${normalizedBase}/api/v1`;
 
 export const API_ROUTES = {

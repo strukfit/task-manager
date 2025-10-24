@@ -1,4 +1,5 @@
 import { API_ROUTES, BASE_URL } from '@/constants/api';
+import { storage } from '@/lib/storage';
 import { AuthResponse } from '@/schemas/auth';
 import { ApiResponse } from '@/types/common';
 import axios from 'axios';
@@ -12,7 +13,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use(config => {
-  const token = localStorage.getItem('accessToken');
+  const token = storage.getItem('accessToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -30,7 +31,7 @@ apiClient.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = storage.getItem('refreshToken');
         const response = await axios.post<ApiResponse<AuthResponse>>(
           `${BASE_URL}${API_ROUTES.auth.refresh}`,
           { refreshToken },
@@ -42,12 +43,12 @@ apiClient.interceptors.response.use(
           response.data.data;
 
         console.log(response);
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', newRefreshToken);
+        storage.setItem('accessToken', accessToken);
+        storage.setItem('refreshToken', newRefreshToken);
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return apiClient(originalRequest);
       } catch (error) {
-        localStorage.clear();
+        storage.clear();
         location.href = '/login';
         throw error;
       }

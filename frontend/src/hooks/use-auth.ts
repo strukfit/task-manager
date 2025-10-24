@@ -1,4 +1,5 @@
 import { login, requestPasswordReset, resetPassword, signup } from '@/api/auth';
+import { storage } from '@/lib/storage';
 import { AuthResponse } from '@/schemas/auth';
 import { User } from '@/schemas/user';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -10,16 +11,16 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User | undefined>(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedAccessToken = localStorage.getItem('accessToken');
-    const storedRefreshToken = localStorage.getItem('refreshToken');
+    const storedUser = storage.getItem('user');
+    const storedAccessToken = storage.getItem('accessToken');
+    const storedRefreshToken = storage.getItem('refreshToken');
     return storedUser && storedAccessToken && storedRefreshToken
       ? (JSON.parse(storedUser) as User)
       : undefined;
   });
 
   const logout = useCallback(() => {
-    localStorage.clear();
+    storage.clear();
     setUser(undefined);
     queryClient.removeQueries({ queryKey: ['user'] });
     navigate('/login');
@@ -30,9 +31,9 @@ export const useAuth = () => {
       if (!data) throw new Error('Ivalid username or password');
 
       const { accessToken, refreshToken, user } = data.data;
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      storage.setItem('user', JSON.stringify(user));
+      storage.setItem('accessToken', accessToken);
+      storage.setItem('refreshToken', refreshToken);
 
       setUser(prevUser =>
         JSON.stringify(prevUser) === JSON.stringify(user) ? prevUser : user
