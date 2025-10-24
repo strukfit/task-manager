@@ -10,6 +10,7 @@ import { Plus } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 import { Project } from '@/schemas/project';
 import { useBoardLayout } from '@/hooks/use-board-layout';
+import { Paginator } from '@/components/common/paginator';
 
 const COLUMN_TO_SORT_FIELD: Record<string, string> = {
   name: 'name',
@@ -18,6 +19,8 @@ const COLUMN_TO_SORT_FIELD: Record<string, string> = {
 
 export default function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = Number.parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = Number.parseInt(searchParams.get('limit') || '20', 10);
 
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -33,7 +36,13 @@ export default function ProjectsPage() {
       : [];
 
   const { workspaceId } = useParams<{ workspaceId: string }>();
-  const { data: projects, deleteProject } = useProjects(Number(workspaceId), {
+  const {
+    data: projects,
+    pagination,
+    deleteProject,
+  } = useProjects(Number(workspaceId), {
+    page: currentPage - 1,
+    size: pageSize,
     sortBy:
       sorting.length > 0
         ? COLUMN_TO_SORT_FIELD[sorting[0].id] || undefined
@@ -107,6 +116,11 @@ export default function ProjectsPage() {
     [setSearchParams]
   );
 
+  const handlePageChange = (page: number) => {
+    searchParams.set('page', page.toString());
+    setSearchParams(searchParams);
+  };
+
   return (
     <>
       <DataTable
@@ -120,6 +134,13 @@ export default function ProjectsPage() {
         onRowClick={project => handleOverview(project.id)}
         isClickable={true}
       />
+      <div className="flex mt-8">
+        <Paginator
+          currentPage={pagination.page + 1}
+          totalPages={pagination.pages}
+          onPageChange={handlePageChange}
+        />
+      </div>
       <ConfirmationDialog
         title="Delete Project"
         description={`Are you sure you want to delete the project "${projectToDelete?.name}"? This action cannot be undone.`}

@@ -21,6 +21,7 @@ import {
 import { AxiosError } from 'axios';
 
 import { QUERY_KEYS as ISSUE_QUERY_KEYS } from './use-issues';
+import { Pagination } from '@/types/common';
 
 export type ProjectsQueryConfig = GetProjectsParams;
 
@@ -171,7 +172,7 @@ export const useProjects = (
 ) => {
   const queryClient = useQueryClient();
 
-  const projectsQuery = useQuery<ProjectsResponse, AxiosError>({
+  const projectsQuery = useQuery<Pagination<ProjectsResponse>, AxiosError>({
     queryKey: QUERY_KEYS.projectsList(workspaceId, config),
     queryFn: () => getProjects(workspaceId, config),
     staleTime: 1000 * 60 * 5,
@@ -196,7 +197,13 @@ export const useProjects = (
   );
 
   return {
-    data: projectsQuery.data || [],
+    data: projectsQuery.data?.content || [],
+    pagination: {
+      page: projectsQuery.data?.number ?? 1,
+      limit: projectsQuery.data?.size ?? 1,
+      pages: projectsQuery.data?.totalPages ?? 0,
+      total: projectsQuery.data?.totalElements ?? 0,
+    },
     isLoading: projectsQuery.isLoading,
     isError: projectsQuery.isError,
     error: projectsQuery.error,

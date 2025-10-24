@@ -1,8 +1,9 @@
 import {
   ApiError,
   ApiResponse,
-  BaseParamsConfig,
+  BaseParamsConfigWithPagination,
   PaginatedResponse,
+  Pagination,
 } from '@/types/common';
 import apiClient from './api-client';
 import { API_ROUTES } from '@/constants/api';
@@ -13,18 +14,18 @@ import {
   ProjectsResponse,
 } from '@/schemas/project';
 
-export type GetProjectsParams = BaseParamsConfig;
+export type GetProjectsParams = BaseParamsConfigWithPagination;
 
 export const getProjects = async (
   workspaceId: number,
   params?: GetProjectsParams
-): Promise<ProjectsResponse> => {
+): Promise<Pagination<ProjectsResponse>> => {
   try {
     const response = await apiClient.get<PaginatedResponse<ProjectsResponse>>(
       API_ROUTES.projects.projects(workspaceId),
       { params }
     );
-    return response.data.data.content;
+    return response.data.data;
   } catch (error) {
     const axiosError = error as ApiError;
     throw new Error(

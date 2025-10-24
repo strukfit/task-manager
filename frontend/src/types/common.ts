@@ -29,3 +29,8 @@ interface SortParamsConfig {
 export type SortParams = keyof SortParamsConfig;
 
 export type BaseParamsConfig = SortParamsConfig;
+
+export interface BaseParamsConfigWithPagination extends BaseParamsConfig {
+  page?: number;
+  size?: number;
+}
