@@ -9,7 +9,7 @@ import { CreateProjectDialog } from '@/components/project/create-project-dialog'
 import { Plus } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 import { Project } from '@/schemas/project';
-import { useBoardLayout } from '@/components/board/board-layout';
+import { useBoardLayout } from '@/hooks/use-board-layout';
 
 const COLUMN_TO_SORT_FIELD: Record<string, string> = {
   name: 'name',
@@ -21,7 +21,6 @@ export default function ProjectsPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const { data: projects, deleteProject } = useProjects(Number(workspaceId));
 
-  const [sorting, setSorting] = useState<SortingState>([]);
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
@@ -29,6 +28,11 @@ export default function ProjectsPage() {
 
   const sortParam = searchParams.get('sortBy');
   const sortOrderParam = searchParams.get('sortOrder');
+
+  const sorting: SortingState =
+    sortParam && (sortOrderParam === 'asc' || sortOrderParam === 'desc')
+      ? [{ id: sortParam, desc: sortOrderParam === 'desc' }]
+      : [];
 
   useEffect(() => {
     setHeader(
@@ -46,27 +50,16 @@ export default function ProjectsPage() {
     return () => setHeader(null);
   }, [setHeader]);
 
-  useEffect(() => {
-    if (sortParam && (sortOrderParam === 'asc' || sortOrderParam === 'desc')) {
-      setSorting([{ id: sortParam, desc: sortOrderParam === 'desc' }]);
-    } else {
-      setSorting([]);
-    }
-  }, [sortParam, sortOrderParam]);
-
   const handleOverview = (id: number) => {
     navigate(`/workspaces/${workspaceId}/projects/${id}`);
   };
 
-  const handleDeleteClick = useCallback(
-    (project: Project) => {
-      if (project) {
-        setProjectToDelete(project);
-        setIsDeleteDialogOpen(true);
-      }
-    },
-    [projects]
-  );
+  const handleDeleteClick = useCallback((project: Project) => {
+    if (project) {
+      setProjectToDelete(project);
+      setIsDeleteDialogOpen(true);
+    }
+  }, []);
 
   const handleDelete = useCallback(async () => {
     if (!projectToDelete) return;

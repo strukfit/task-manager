@@ -23,7 +23,7 @@ export const useAuth = () => {
     setUser(undefined);
     queryClient.removeQueries({ queryKey: ['user'] });
     navigate('/login');
-  }, [queryClient]);
+  }, [queryClient, navigate]);
 
   const handleAuthSuccess = useCallback(
     (data: { success: boolean; data: AuthResponse }) => {

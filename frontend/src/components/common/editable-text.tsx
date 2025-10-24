@@ -79,7 +79,7 @@ export function EditableText<T extends object>({
     try {
       await onSave(fieldName, newVal);
       setIsEditing(false);
-    } catch (err) {
+    } catch {
       setValue(fieldName as string, originalValue);
     } finally {
       setIsSaving(false);

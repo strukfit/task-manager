@@ -1,4 +1,4 @@
-import { useBoardLayout } from '@/components/board/board-layout';
+import { useBoardLayout } from '@/hooks/use-board-layout';
 import IssuesBoard from '@/components/issue/issues-board';
 import { useEffect } from 'react';
 

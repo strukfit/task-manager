@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
-import { useBoardLayout } from '@/components/board/board-layout';
+import { useBoardLayout } from '@/hooks/use-board-layout';
 
 export default function ProjectOverviewPage() {
   const { workspaceId, projectId } = useParams<{
@@ -108,7 +108,7 @@ export default function ProjectOverviewPage() {
             ? value.trim() || undefined
             : project.description,
       });
-    } catch (error) {
+    } catch {
       toast.error(
         `Failed to update ${field === 'name' ? 'name' : 'description'}`
       );
@@ -125,7 +125,7 @@ export default function ProjectOverviewPage() {
     } catch {
       toast.error('Failed to delete project');
     }
-  }, [project]);
+  }, [project, deleteProject, navigate, workspaceId]);
 
   if (projectLoading) {
     return (

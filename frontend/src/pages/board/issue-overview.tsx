@@ -30,7 +30,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useBoardLayout } from '@/components/board/board-layout';
+import { useBoardLayout } from '@/hooks/use-board-layout';
 
 export default function IssueOverviewPage() {
   const { workspaceId: workspaceIdStr, issueId: issueIdStr } = useParams<{
@@ -127,7 +127,7 @@ export default function IssueOverviewPage() {
         form.setValue(field, issue[field as keyof Issue] as string);
       }
     },
-    [issue, form]
+    [issue, form, updateIssue]
   );
 
   const handleDelete = useCallback(async () => {
@@ -139,7 +139,7 @@ export default function IssueOverviewPage() {
     } catch {
       toast.error('Failed to delete issue');
     }
-  }, [issue]);
+  }, [issue, deleteIssue, navigate, workspaceId]);
 
   if (issueLoading || projectsLoading) {
     return (

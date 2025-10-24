@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Check, Eye, EyeOff, X } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import {
   LoginCreditentials,
   loginSchema,
@@ -56,9 +56,11 @@ export function AuthForm({
     data: LoginCreditentials | SignupCreditentials
   ) => {
     try {
-      isSignup
-        ? await signup(data as SignupCreditentials)
-        : await login(data as LoginCreditentials);
+      if (isSignup) {
+        await signup(data as SignupCreditentials);
+      } else {
+        await login(data as LoginCreditentials);
+      }
       navigate('/workspaces');
     } catch (e) {
       const error = e as Error;
@@ -66,7 +68,11 @@ export function AuthForm({
     }
   };
 
-  const password = form.watch('password') || '';
+  const password = useWatch({
+    control: form.control,
+    name: 'password',
+    defaultValue: '',
+  });
   const passwordErrors = form.formState.errors.password as
     | PasswordErrors
     | undefined;

@@ -20,7 +20,7 @@ export const QUERY_KEYS = {
   workspace: (id: number) => ['workspace', id],
 } as const;
 
-const generateCreateWorkspaceMutation = (queryClient: QueryClient) =>
+const useCreateWorkspaceMutation = (queryClient: QueryClient) =>
   useMutation({
     mutationFn: createWorkspace,
     onSuccess: async () => {
@@ -28,7 +28,7 @@ const generateCreateWorkspaceMutation = (queryClient: QueryClient) =>
     },
   });
 
-const generateUpdateWorkspaceMutation = (queryClient: QueryClient) =>
+const useUpdateWorkspaceMutation = (queryClient: QueryClient) =>
   useMutation({
     mutationFn: updateWorkspace,
     onMutate: async updatedWorkspace => {
@@ -89,7 +89,7 @@ const generateUpdateWorkspaceMutation = (queryClient: QueryClient) =>
     },
   });
 
-const generateDeleteWorkspaceMutation = (queryClient: QueryClient) =>
+const useDeleteWorkspaceMutation = (queryClient: QueryClient) =>
   useMutation({
     mutationFn: deleteWorkspace,
     onMutate: async workspaceId => {
@@ -131,9 +131,9 @@ export const useWorkspaces = () => {
     retry: 2,
   });
 
-  const createWorkspaceMutation = generateCreateWorkspaceMutation(queryClient);
-  const updateWorkspaceMutation = generateUpdateWorkspaceMutation(queryClient);
-  const deleteWorkspaceMutation = generateDeleteWorkspaceMutation(queryClient);
+  const createWorkspaceMutation = useCreateWorkspaceMutation(queryClient);
+  const updateWorkspaceMutation = useUpdateWorkspaceMutation(queryClient);
+  const deleteWorkspaceMutation = useDeleteWorkspaceMutation(queryClient);
 
   return {
     data: workspacesQuery.data || [],
@@ -157,9 +157,9 @@ export const useWorkspaceById = (id?: number) => {
     retry: 2,
   });
 
-  const createWorkspaceMutation = generateCreateWorkspaceMutation(queryClient);
-  const updateWorkspaceMutation = generateUpdateWorkspaceMutation(queryClient);
-  const deleteWorkspaceMutation = generateDeleteWorkspaceMutation(queryClient);
+  const createWorkspaceMutation = useCreateWorkspaceMutation(queryClient);
+  const updateWorkspaceMutation = useUpdateWorkspaceMutation(queryClient);
+  const deleteWorkspaceMutation = useDeleteWorkspaceMutation(queryClient);
 
   return {
     workspace: workspaceByIdQuery.data,

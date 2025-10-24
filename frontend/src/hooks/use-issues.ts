@@ -45,7 +45,7 @@ const getGroupKey = (issue: Issue, config: IssuesQueryConfig) =>
         ? issue.project?.id?.toString() || '-1'
         : 'all';
 
-const generateCreateIssueMutation = (
+const useCreateIssueMutation = (
   queryClient: QueryClient,
   workspaceId: number,
   config: IssuesQueryConfig = {}
@@ -71,7 +71,7 @@ const generateCreateIssueMutation = (
     },
   });
 
-const generateUpdateIssueMutation = (
+const useUpdateIssueMutation = (
   queryClient: QueryClient,
   workspaceId: number,
   config: IssuesQueryConfig = {}
@@ -114,7 +114,7 @@ const generateUpdateIssueMutation = (
     },
   });
 
-const generateDeleteIssueMutation = (
+const useDeleteIssueMutation = (
   queryClient: QueryClient,
   workspaceId: number,
   config: IssuesQueryConfig = {}
@@ -177,19 +177,19 @@ export const useIssues = (
     retry: 2,
   });
 
-  const createIssueMutation = generateCreateIssueMutation(
+  const createIssueMutation = useCreateIssueMutation(
     queryClient,
     workspaceId,
     config
   );
 
-  const updateIssueMutation = generateUpdateIssueMutation(
+  const updateIssueMutation = useUpdateIssueMutation(
     queryClient,
     workspaceId,
     config
   );
 
-  const deleteIssueMutation = generateDeleteIssueMutation(
+  const deleteIssueMutation = useDeleteIssueMutation(
     queryClient,
     workspaceId,
     config
@@ -217,20 +217,11 @@ export const useIssueById = (workspaceId?: number, id?: number) => {
     retry: 2,
   });
 
-  const createIssueMutation = generateCreateIssueMutation(
-    queryClient,
-    workspaceId!
-  );
+  const createIssueMutation = useCreateIssueMutation(queryClient, workspaceId!);
 
-  const updateIssueMutation = generateUpdateIssueMutation(
-    queryClient,
-    workspaceId!
-  );
+  const updateIssueMutation = useUpdateIssueMutation(queryClient, workspaceId!);
 
-  const deleteIssueMutation = generateDeleteIssueMutation(
-    queryClient,
-    workspaceId!
-  );
+  const deleteIssueMutation = useDeleteIssueMutation(queryClient, workspaceId!);
 
   return {
     issue: issueByIdQuery.data,

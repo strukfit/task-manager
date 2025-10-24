@@ -15,4 +15,4 @@ interface SortParamsConfig {
 
 export type SortParams = keyof SortParamsConfig;
 
-export interface BaseParamsConfig extends SortParamsConfig {}
+export type BaseParamsConfig = SortParamsConfig;

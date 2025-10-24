@@ -38,7 +38,7 @@ export default function IssueCard({ issue }: IssueCardProps) {
           field === 'priority' ? (value as IssuePriority) : issue.priority,
       };
       await updateIssue(updatedIssue);
-    } catch (error) {
+    } catch {
       toast.error(
         `Failed to update ${field === 'projectId' ? 'project' : field}`
       );

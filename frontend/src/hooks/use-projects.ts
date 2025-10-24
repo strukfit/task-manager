@@ -30,7 +30,7 @@ export const QUERY_KEYS = {
   project: (workspaceId: number, id: number) => ['project', workspaceId, id],
 } as const;
 
-const generateCreateProjectMutation = (
+const useCreateProjectMutation = (
   queryClient: QueryClient,
   workspaceId: number
 ) =>
@@ -46,7 +46,7 @@ const generateCreateProjectMutation = (
     },
   });
 
-const generateDeleteProjectMutation = (
+const useDeleteProjectMutation = (
   queryClient: QueryClient,
   workspaceId: number
 ) =>
@@ -90,7 +90,7 @@ const generateDeleteProjectMutation = (
     },
   });
 
-const generateUpdateProjectMutation = (
+const useUpdateProjectMutation = (
   queryClient: QueryClient,
   workspaceId: number
 ) =>
@@ -169,17 +169,17 @@ export const useProjects = (workspaceId: number) => {
     retry: 2,
   });
 
-  const createProjectMutation = generateCreateProjectMutation(
+  const createProjectMutation = useCreateProjectMutation(
     queryClient,
     workspaceId
   );
 
-  const updateProjectMutation = generateUpdateProjectMutation(
+  const updateProjectMutation = useUpdateProjectMutation(
     queryClient,
     workspaceId
   );
 
-  const deleteProjectMutation = generateDeleteProjectMutation(
+  const deleteProjectMutation = useDeleteProjectMutation(
     queryClient,
     workspaceId
   );
@@ -206,17 +206,17 @@ export const useProjectById = (workspaceId?: number, id?: number) => {
     retry: 2,
   });
 
-  const createProjectMutation = generateCreateProjectMutation(
+  const createProjectMutation = useCreateProjectMutation(
     queryClient,
     workspaceId!
   );
 
-  const updateProjectMutation = generateUpdateProjectMutation(
+  const updateProjectMutation = useUpdateProjectMutation(
     queryClient,
     workspaceId!
   );
 
-  const deleteProjectMutation = generateDeleteProjectMutation(
+  const deleteProjectMutation = useDeleteProjectMutation(
     queryClient,
     workspaceId!
   );

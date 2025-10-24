@@ -8,7 +8,9 @@ import prettier from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['node_modules', 'dist', 'build', 'coverage'] },
+  {
+    ignores: ['node_modules', 'dist', 'build', 'coverage', 'src/components/ui'],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
@@ -39,6 +41,12 @@ export default tseslint.config(
       'prettier/prettier': 'error',
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off',
+      'prettier/prettier': [
+        'error',
+        {
+          endOfLine: 'auto',
+        },
+      ],
     },
     settings: {
       react: {

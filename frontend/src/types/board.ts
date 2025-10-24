@@ -8,3 +8,7 @@ export interface Column {
 }
 
 export type Columns = Record<string, Column>;
+
+export interface BoardLayoutContext {
+  setHeader: (header: React.ReactNode) => void;
+}

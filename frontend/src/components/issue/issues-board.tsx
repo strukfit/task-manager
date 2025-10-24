@@ -10,7 +10,7 @@ import {
   IssueStatus,
 } from '@/constants/issue';
 import { IssuesQueryConfig, useIssues } from '@/hooks/use-issues';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 
 import {
@@ -48,7 +48,7 @@ export default function IssuesBoard() {
     projectIds: projectId ? [Number(projectId)] : undefined,
   });
 
-  const [columns, setColumns] = useState<Columns>({});
+  const [localColumns, setLocalColumns] = useState<Columns | null>(null);
 
   const [activeNode, setActiveNode] = useState<React.ReactNode | null>(null);
 
@@ -61,15 +61,7 @@ export default function IssuesBoard() {
   const { data: projects, isLoading: projectsLoading } =
     useProjects(workspaceId);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
-  );
-
-  useEffect(() => {
+  const memoColumns = useMemo(() => {
     const newColumns: Columns = {};
     if (config.groupBy === 'status') {
       ISSUE_STATUSES.forEach(status => {
@@ -113,8 +105,18 @@ export default function IssuesBoard() {
         issues: issues['all'] || [],
       };
     }
-    setColumns(newColumns);
+    return newColumns;
   }, [issues, config.groupBy, projects]);
+
+  const columns = localColumns ?? memoColumns;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   const onDragStart = useCallback((event: DragStartEvent) => {
     const element = event.active.data.current?.element;
@@ -125,6 +127,8 @@ export default function IssuesBoard() {
     async (event: DragEndEvent) => {
       setActiveNode(null);
       const { active, over } = event;
+
+      const currentColumns = localColumns ?? memoColumns;
 
       const activeId = active.id.toString();
       const activeContainer = active.data.current?.sortable.containerId;
@@ -140,20 +144,20 @@ export default function IssuesBoard() {
 
       if (activeContainer === overContainer) return;
 
-      const activeIssue = columns[activeContainer].issues.find(
+      const activeIssue = currentColumns[activeContainer].issues.find(
         i => i.id.toString() === activeId
       );
       if (!activeIssue) return;
 
-      let overIndex = columns[overContainer].issues.length;
+      let overIndex = currentColumns[overContainer].issues.length;
       if (over && over.id.toString() !== activeId) {
-        overIndex = columns[overContainer].issues.findIndex(
+        overIndex = currentColumns[overContainer].issues.findIndex(
           issue => issue.id.toString() === over.id.toString()
         );
       }
 
-      const sourceIssues = [...columns[activeContainer].issues];
-      const destIssues = [...columns[overContainer].issues];
+      const sourceIssues = [...currentColumns[activeContainer].issues];
+      const destIssues = [...currentColumns[overContainer].issues];
       const sourceIndex = sourceIssues.findIndex(
         i => i.id.toString() === activeId
       );
@@ -168,24 +172,29 @@ export default function IssuesBoard() {
       }
       destIssues.splice(overIndex, 0, updatedIssue);
 
-      setColumns({
-        ...columns,
+      const updatedColumns: Columns = {
+        ...currentColumns,
         [activeContainer]: {
-          ...columns[activeContainer],
+          ...currentColumns[activeContainer],
           issues: sourceIssues,
         },
-        [overContainer]: { ...columns[overContainer], issues: destIssues },
-      });
+        [overContainer]: {
+          ...currentColumns[overContainer],
+          issues: destIssues,
+        },
+      };
+
+      setLocalColumns(updatedColumns);
 
       try {
         await updateIssue(updatedIssue);
       } catch (err) {
         const error = err as Error;
         toast(error.message || 'Failed to update issue');
-        setColumns(columns);
+        setLocalColumns(currentColumns);
       }
     },
-    [columns, config.groupBy, updateIssue]
+    [localColumns, memoColumns, config.groupBy, updateIssue]
   );
 
   const openDialog = (initValue: string) => {
