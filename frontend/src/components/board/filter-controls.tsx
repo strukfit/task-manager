@@ -51,7 +51,7 @@ export default function FilterControls({
   setConfig,
   workspaceId,
 }: FilterControlsProps) {
-  const { data: projects = [] } = useProjects(workspaceId);
+  const { data: projects, isLoading } = useProjects(workspaceId);
 
   const filterOptions = useMemo(
     () => [
@@ -86,32 +86,18 @@ export default function FilterControls({
         ],
       },
     ],
-    [
-      ISSUE_STATUSES,
-      ISSUE_STATUS_LABELS,
-      ISSUE_PRIORITIES,
-      ISSUE_PRIORITY_LABELS,
-      projects,
-    ]
+    [projects]
   );
 
-  const groupByOptions = useMemo(
-    () =>
-      ISSUE_GROUP_BY.map(value => ({
-        value,
-        label: ISSUE_GROUP_BY_LABELS[value],
-      })),
-    [ISSUE_GROUP_BY, ISSUE_GROUP_BY_LABELS]
-  );
+  const groupByOptions = ISSUE_GROUP_BY.map(value => ({
+    value,
+    label: ISSUE_GROUP_BY_LABELS[value],
+  }));
 
-  const sortByOptions = useMemo(
-    () =>
-      ISSUE_SORT_BY.map(value => ({
-        value,
-        label: ISSUE_SORT_BY_LABELS[value],
-      })),
-    [ISSUE_SORT_BY, ISSUE_SORT_BY_LABELS]
-  );
+  const sortByOptions = ISSUE_SORT_BY.map(value => ({
+    value,
+    label: ISSUE_SORT_BY_LABELS[value],
+  }));
 
   const handleFilterChange = (selected: string[]) => {
     const statuses = selected.filter(s =>
@@ -150,7 +136,10 @@ export default function FilterControls({
   return (
     <div className="flex flex-row mb-2 gap-1">
       <MultiSelect onValuesChange={handleFilterChange}>
-        <MultiSelectTrigger className="w-full max-w-[400px]">
+        <MultiSelectTrigger
+          disabled={isLoading}
+          className="w-full max-w-[400px]"
+        >
           <MultiSelectValue placeholder="Filter By..." />
         </MultiSelectTrigger>
         <MultiSelectContent>

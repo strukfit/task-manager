@@ -114,15 +114,12 @@ export default function IssuesBoard() {
       };
     }
     setColumns(newColumns);
-  }, [issues]);
+  }, [issues, config.groupBy, projects]);
 
-  const onDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const element = event.active.data.current?.element;
-      setActiveNode(element || null);
-    },
-    [columns]
-  );
+  const onDragStart = useCallback((event: DragStartEvent) => {
+    const element = event.active.data.current?.element;
+    setActiveNode(element || null);
+  }, []);
 
   const onDragEnd = useCallback(
     async (event: DragEndEvent) => {
@@ -188,7 +185,7 @@ export default function IssuesBoard() {
         setColumns(columns);
       }
     },
-    [columns]
+    [columns, config.groupBy, updateIssue]
   );
 
   const openDialog = (initValue: string) => {
@@ -204,14 +201,6 @@ export default function IssuesBoard() {
     setDialogOpen(true);
   };
 
-  if (issuesLoading || projectsLoading) {
-    return (
-      <div className="flex flex-row justify-center">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <>
       <div>
@@ -221,31 +210,37 @@ export default function IssuesBoard() {
           workspaceId={workspaceId}
         />
       </div>
-      <div className="flex flex-col">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={rectIntersection}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row gap-2 w-full">
-            {Object.entries(columns).map(([columnId, column]) => (
-              <DroppableColumn
-                key={columnId}
-                columnId={columnId}
-                column={column}
-                onOpenCreateDialog={openDialog}
+      {issuesLoading || projectsLoading ? (
+        <div className="flex flex-row justify-center w-screen">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      ) : (
+        <div className="flex flex-col">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={rectIntersection}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row gap-2 w-full">
+              {Object.entries(columns).map(([columnId, column]) => (
+                <DroppableColumn
+                  key={columnId}
+                  columnId={columnId}
+                  column={column}
+                  onOpenCreateDialog={openDialog}
+                />
+              ))}
+              <CreateIssueDialog
+                initValues={dialogInitValues || {}}
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
               />
-            ))}
-            <CreateIssueDialog
-              initValues={dialogInitValues || {}}
-              open={dialogOpen}
-              onOpenChange={setDialogOpen}
-            />
-          </div>
-          <DragOverlay zIndex={1000}>{activeNode}</DragOverlay>
-        </DndContext>
-      </div>
+            </div>
+            <DragOverlay zIndex={1000}>{activeNode}</DragOverlay>
+          </DndContext>
+        </div>
+      )}
     </>
   );
 }
