@@ -10,6 +10,7 @@ export const projectSchema = z.object({
     .string()
     .max(255, 'Description must be 255 characters or less')
     .optional(),
+  createdAt: z.string(),
 });
 
 export const createProjectSchema = projectSchema.omit({ id: true });

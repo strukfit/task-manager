@@ -3,6 +3,7 @@ import {
   deleteProject,
   getProjectById,
   getProjects,
+  GetProjectsParams,
   updateProject,
 } from '@/api/projects';
 import {
@@ -21,11 +22,14 @@ import { AxiosError } from 'axios';
 
 import { QUERY_KEYS as ISSUE_QUERY_KEYS } from './use-issues';
 
+export type ProjectsQueryConfig = GetProjectsParams;
+
 export const QUERY_KEYS = {
   projects: (workspaceId: number) => ['projects', workspaceId],
-  projectsList: (workspaceId: number) => [
+  projectsList: (workspaceId: number, config: ProjectsQueryConfig) => [
     ...QUERY_KEYS.projects(workspaceId),
     'list',
+    config,
   ],
   project: (workspaceId: number, id: number) => ['project', workspaceId, id],
 } as const;
@@ -48,7 +52,8 @@ const useCreateProjectMutation = (
 
 const useDeleteProjectMutation = (
   queryClient: QueryClient,
-  workspaceId: number
+  workspaceId: number,
+  config: ProjectsQueryConfig = {}
 ) =>
   useMutation({
     mutationFn: (id: number) => deleteProject(workspaceId, id),
@@ -58,12 +63,12 @@ const useDeleteProjectMutation = (
       });
 
       const previousProjects = queryClient.getQueryData<ProjectsResponse>(
-        QUERY_KEYS.projectsList(workspaceId)
+        QUERY_KEYS.projectsList(workspaceId, config)
       );
 
       if (previousProjects) {
         queryClient.setQueryData<ProjectsResponse>(
-          QUERY_KEYS.projectsList(workspaceId),
+          QUERY_KEYS.projectsList(workspaceId, config),
           {
             ...previousProjects.filter(w => w.id !== workspaceId),
           }
@@ -75,7 +80,7 @@ const useDeleteProjectMutation = (
     onError: (_err, _variables, context) => {
       if (context?.previousProjects) {
         queryClient.setQueryData(
-          QUERY_KEYS.projectsList(workspaceId),
+          QUERY_KEYS.projectsList(workspaceId, config),
           context.previousProjects
         );
       }
@@ -92,7 +97,8 @@ const useDeleteProjectMutation = (
 
 const useUpdateProjectMutation = (
   queryClient: QueryClient,
-  workspaceId: number
+  workspaceId: number,
+  config: ProjectsQueryConfig = {}
 ) =>
   useMutation({
     mutationFn: (project: ProjectEdit) => updateProject(workspaceId, project),
@@ -105,7 +111,7 @@ const useUpdateProjectMutation = (
       });
 
       const previousProjects = queryClient.getQueryData<ProjectsResponse>(
-        QUERY_KEYS.projectsList(workspaceId)
+        QUERY_KEYS.projectsList(workspaceId, config)
       );
       const previousProject = queryClient.getQueryData<Project>(
         QUERY_KEYS.project(workspaceId, updatedProject.id!)
@@ -113,7 +119,7 @@ const useUpdateProjectMutation = (
 
       if (previousProjects) {
         queryClient.setQueryData<ProjectsResponse>(
-          QUERY_KEYS.projectsList(workspaceId),
+          QUERY_KEYS.projectsList(workspaceId, config),
           {
             ...previousProjects.map(w =>
               w.id === updatedProject.id ? { ...w, ...updatedProject } : w
@@ -133,7 +139,7 @@ const useUpdateProjectMutation = (
     onError: (_err, variables, context) => {
       if (context?.previousProjects) {
         queryClient.setQueryData(
-          QUERY_KEYS.projectsList(workspaceId),
+          QUERY_KEYS.projectsList(workspaceId, config),
           context.previousProjects
         );
       }
@@ -159,12 +165,15 @@ const useUpdateProjectMutation = (
     },
   });
 
-export const useProjects = (workspaceId: number) => {
+export const useProjects = (
+  workspaceId: number,
+  config: ProjectsQueryConfig = {}
+) => {
   const queryClient = useQueryClient();
 
   const projectsQuery = useQuery<ProjectsResponse, AxiosError>({
-    queryKey: QUERY_KEYS.projectsList(workspaceId),
-    queryFn: () => getProjects(workspaceId),
+    queryKey: QUERY_KEYS.projectsList(workspaceId, config),
+    queryFn: () => getProjects(workspaceId, config),
     staleTime: 1000 * 60 * 5,
     retry: 2,
   });
@@ -176,12 +185,14 @@ export const useProjects = (workspaceId: number) => {
 
   const updateProjectMutation = useUpdateProjectMutation(
     queryClient,
-    workspaceId
+    workspaceId,
+    config
   );
 
   const deleteProjectMutation = useDeleteProjectMutation(
     queryClient,
-    workspaceId
+    workspaceId,
+    config
   );
 
   return {

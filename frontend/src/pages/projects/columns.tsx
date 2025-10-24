@@ -25,6 +25,15 @@ export const columns = ({
     enableSorting: true,
   },
   {
+    accessorKey: 'createdAt',
+    header: 'Create Date',
+    enableSorting: true,
+    cell: ({ row }) => {
+      const date = new Date(row.original.createdAt);
+      return <span>{`${date.toLocaleDateString()}`}</span>;
+    },
+  },
+  {
     id: 'actions',
     cell: ({ row }) => (
       <DropdownMenu>

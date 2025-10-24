@@ -1,4 +1,9 @@
-import { ApiError, ApiResponse, PaginatedResponse } from '@/types/common';
+import {
+  ApiError,
+  ApiResponse,
+  BaseParamsConfig,
+  PaginatedResponse,
+} from '@/types/common';
 import apiClient from './api-client';
 import { API_ROUTES } from '@/constants/api';
 import {
@@ -8,12 +13,16 @@ import {
   ProjectsResponse,
 } from '@/schemas/project';
 
+export type GetProjectsParams = BaseParamsConfig;
+
 export const getProjects = async (
-  workspaceId: number
+  workspaceId: number,
+  params?: GetProjectsParams
 ): Promise<ProjectsResponse> => {
   try {
     const response = await apiClient.get<PaginatedResponse<ProjectsResponse>>(
-      API_ROUTES.projects.projects(workspaceId)
+      API_ROUTES.projects.projects(workspaceId),
+      { params }
     );
     return response.data.data.content;
   } catch (error) {

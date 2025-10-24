@@ -13,13 +13,11 @@ import { useBoardLayout } from '@/hooks/use-board-layout';
 
 const COLUMN_TO_SORT_FIELD: Record<string, string> = {
   name: 'name',
+  createdAt: 'createdAt',
 };
 
 export default function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const { workspaceId } = useParams<{ workspaceId: string }>();
-  const { data: projects, deleteProject } = useProjects(Number(workspaceId));
 
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -33,6 +31,16 @@ export default function ProjectsPage() {
     sortParam && (sortOrderParam === 'asc' || sortOrderParam === 'desc')
       ? [{ id: sortParam, desc: sortOrderParam === 'desc' }]
       : [];
+
+  const { workspaceId } = useParams<{ workspaceId: string }>();
+  const { data: projects, deleteProject } = useProjects(Number(workspaceId), {
+    sortBy:
+      sorting.length > 0
+        ? COLUMN_TO_SORT_FIELD[sorting[0].id] || undefined
+        : undefined,
+    sortOrder:
+      sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : undefined,
+  });
 
   useEffect(() => {
     setHeader(
