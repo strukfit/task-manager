@@ -1,19 +1,11 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams } from 'react-router';
 import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { FormProvider, useForm } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 import { useProjectById, useProjects } from '@/hooks/use-projects';
 import {
@@ -22,13 +14,19 @@ import {
   ProjectCreate,
   ProjectEdit,
 } from '@/schemas/project';
+import { EditableText } from '../common/editable-text';
 
-interface IssueFormProps {
+interface ProjectFormProps {
   projectId?: number;
   onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export default function IssueForm({ projectId, onSuccess }: IssueFormProps) {
+export default function ProjectForm({
+  projectId,
+  onSuccess,
+  onCancel,
+}: ProjectFormProps) {
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const { project, isLoading: projectLoading } = useProjectById(
     Number(workspaceId),
@@ -52,7 +50,7 @@ export default function IssueForm({ projectId, onSuccess }: IssueFormProps) {
     }
   }, [project, form, projectId]);
 
-  const onSubmit = async (values: ProjectCreate | ProjectEdit) => {
+  const handleSave = async (values: ProjectCreate | ProjectEdit) => {
     try {
       if (projectId) {
         await updateProject(values as ProjectEdit);
@@ -60,9 +58,10 @@ export default function IssueForm({ projectId, onSuccess }: IssueFormProps) {
         await createProject(values as ProjectCreate);
       }
       onSuccess();
+      toast.success(projectId ? 'Project updated' : 'Project created');
     } catch (e) {
       const error = e as Error;
-      toast.error(error.message || 'Failed to save issue');
+      toast.error(error.message || 'Failed to save project');
     }
   };
 
@@ -75,38 +74,58 @@ export default function IssueForm({ projectId, onSuccess }: IssueFormProps) {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter project name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+    <FormProvider {...form}>
+      <div className="flex flex-1 flex-col gap-4">
+        <EditableText
+          fieldName="name"
+          onSave={async (field, value) => {
+            form.setValue(field as keyof ProjectEdit, value);
+          }}
+          editor="input"
+          placeholder="Project name"
+          displayContent={v => (
+            <p className={`${!v ? 'text-gray-400' : ''}`}>
+              {v || 'Project name'}
+            </p>
           )}
         />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Enter issue description" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        <EditableText
+          fieldName="description"
+          onSave={async (field, value) => {
+            form.setValue(field as keyof ProjectEdit, value);
+          }}
+          editor="textarea"
+          placeholder="Add description..."
+          displayContent={(v, p) => (
+            <div className={`prose ${!v ? 'text-gray-400' : ''}`}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {v || p}
+              </ReactMarkdown>
+            </div>
           )}
+          displayContainerClassName="rounded min-h-[60px]"
+          editorClassName="min-h-[60px]"
         />
-        <Button type="submit" disabled={projectLoading}>
-          Save
-        </Button>
-      </form>
-    </Form>
+        <hr className="border-t border-gray-200" />
+        <div className="flex flex-row gap-1 justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCancel}
+            disabled={projectLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            size="sm"
+            onClick={form.handleSubmit(handleSave)}
+            disabled={projectLoading}
+          >
+            {projectId ? 'Save' : 'Create Project'}
+          </Button>
+        </div>
+      </div>
+    </FormProvider>
   );
 }

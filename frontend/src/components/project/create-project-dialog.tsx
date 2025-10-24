@@ -26,6 +26,9 @@ export function CreateProjectDialog({ trigger }: CreateProjectDialogProps) {
           onSuccess={() => {
             setOpen(false);
           }}
+          onCancel={() => {
+            setOpen(false);
+          }}
         />
       </DialogContent>
     </Dialog>

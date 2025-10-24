@@ -138,7 +138,7 @@ export default function ProjectOverviewPage() {
   return (
     <>
       <FormProvider {...form}>
-        <div className="flex flex-1 flex-col md:flex-row gap-4 p-4">
+        <div className="flex flex-1 flex-col md:flex-row gap-4 p-0">
           <Tabs value={activeTab} className="w-full">
             <TabsContent value="overview">
               <div className="flex-1 h-full">
