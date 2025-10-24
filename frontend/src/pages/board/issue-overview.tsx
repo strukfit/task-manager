@@ -152,9 +152,9 @@ export default function IssueOverviewPage() {
   return (
     <>
       <FormProvider {...form}>
-        <div className="flex flex-1 flex-col md:flex-row gap-4 p-4">
-          <div className="flex-1 w-[85%]">
-            <Card className="flex-1 flex flex-col rounded-sm h-full">
+        <div className="flex flex-1 flex-col md:flex-row gap-2 w-full max-w-full">
+          <div className="flex w-full md:max-w-[85%]">
+            <Card className="flex-1 flex flex-col rounded-sm max-w-full w-full h-full">
               <CardHeader>
                 <CardTitle className="text-2xl">
                   <EditableText
@@ -167,7 +167,7 @@ export default function IssueOverviewPage() {
                   />
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6 w-full">
+              <CardContent className="space-y-6 w-full max-w-full">
                 <EditableText
                   fieldName="description"
                   onSave={handleSave}
@@ -175,7 +175,7 @@ export default function IssueOverviewPage() {
                   placeholder="Add description..."
                   displayContent={(v, p) => (
                     <div
-                      className={`prose break-words max-w-none ${!v ? 'text-gray-400' : ''}`}
+                      className={`prose break-words max-w-full ${!v ? 'text-gray-400' : ''}`}
                     >
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {v || p}
@@ -187,8 +187,8 @@ export default function IssueOverviewPage() {
               </CardContent>
             </Card>
           </div>
-          <div className="flex flex-col w-[15%]">
-            <Card className="flex-1 flex flex-col rounded-sm py-2 gap-0">
+          <div className="w-full flex flex-col md:w-auto md:max-w-[15%]">
+            <Card className="flex flex-col rounded-sm py-2 gap-0 h-full">
               <CardHeader className="flex flex-row justify-end px-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

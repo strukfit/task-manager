@@ -224,14 +224,14 @@ export default function IssuesBoard() {
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : (
-        <div className="flex flex-col">
+        <div className="flex flex-col w-fit">
           <DndContext
             sensors={sensors}
             collisionDetection={rectIntersection}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row gap-2 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row lg:mr-4 gap-2 w-fit">
               {Object.entries(columns).map(([columnId, column]) => (
                 <DroppableColumn
                   key={columnId}

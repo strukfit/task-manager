@@ -98,9 +98,9 @@ export function EditableText<T extends object>({
 
   if (!isEditing) {
     return (
-      <div>
+      <div className="w-full">
         <div
-          className={`cursor-text select-text ${displayContainerClassName} ${
+          className={`cursor-text select-text w-full ${displayContainerClassName} ${
             hasError ? 'border-b border-red-500' : ''
           }`}
           onClick={handleEnterEdit}
