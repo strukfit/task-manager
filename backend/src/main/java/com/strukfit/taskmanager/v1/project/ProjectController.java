@@ -1,12 +1,11 @@
 package com.strukfit.taskmanager.v1.project;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.strukfit.taskmanager.common.dto.ApiResponse;
 import com.strukfit.taskmanager.v1.project.dto.ProjectCreateDTO;
 import com.strukfit.taskmanager.v1.project.dto.ProjectDTO;
+import com.strukfit.taskmanager.v1.project.dto.ProjectQueryDTO;
 import com.strukfit.taskmanager.v1.project.dto.ProjectUpdateDTO;
 import com.strukfit.taskmanager.v1.user.User;
 import com.strukfit.taskmanager.v1.utils.SecurityUtils;
@@ -36,12 +36,11 @@ public class ProjectController {
     private SecurityUtils securityUtils;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ProjectDTO>>> getAll(@PathVariable Long workspaceId) {
+    public ResponseEntity<ApiResponse<Page<ProjectDTO>>> getAll(
+            @PathVariable Long workspaceId,
+            @Valid @ModelAttribute ProjectQueryDTO dto) {
         User user = securityUtils.getCurrentUser();
-        List<ProjectDTO> projects = projectService.getByWorkspace(workspaceId, user)
-                .stream()
-                .map(projectMapper::toDTO)
-                .collect(Collectors.toList());
+        Page<ProjectDTO> projects = projectService.getAllByWorkspace(workspaceId, user, dto).map(projectMapper::toDTO);
         return ResponseEntity.ok(ApiResponse.success(projects));
     }
 

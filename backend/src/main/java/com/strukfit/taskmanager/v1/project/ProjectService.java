@@ -1,11 +1,12 @@
 package com.strukfit.taskmanager.v1.project;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.strukfit.taskmanager.v1.project.dto.ProjectCreateDTO;
+import com.strukfit.taskmanager.v1.project.dto.ProjectQueryDTO;
 import com.strukfit.taskmanager.v1.project.dto.ProjectUpdateDTO;
 import com.strukfit.taskmanager.v1.user.User;
 import com.strukfit.taskmanager.v1.workspace.Workspace;
@@ -44,9 +45,12 @@ public class ProjectService {
         return project;
     }
 
-    public List<Project> getByWorkspace(Long wokspaceId, User user) {
+    public Page<Project> getAllByWorkspace(Long wokspaceId, User user, ProjectQueryDTO dto) {
         Workspace workspace = getWorkspaceById(wokspaceId, user);
-        return projectRepository.findByWorkspace(workspace);
+
+        Pageable pageable = dto.toPageable();
+
+        return projectRepository.findByWorkspace(workspace, pageable);
     }
 
     public Project getById(Long workspaceId, Long projectId, User user) {
