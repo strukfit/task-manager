@@ -1,8 +1,12 @@
 import {
   Box,
+  Calendar,
+  CaseSensitive,
+  ChartPie,
   CircleDashed,
   LucideIcon,
   Minus,
+  Rows3,
   Signal,
   SignalHigh,
   SignalMedium,
@@ -18,8 +22,9 @@ import {
 import React from 'react';
 import { IssueStatus } from './issue-status';
 import { IssuePriority } from './issue-priority';
+import { IssueGroupBy, IssueSortBy } from './issue-filter';
 
-export const priorityIcons: Record<string, LucideIcon> = {
+export const priorityIcons: Record<IssuePriority, LucideIcon> = {
   NONE: Minus,
   LOW: SignalMedium,
   MEDIUM: SignalHigh,
@@ -27,13 +32,27 @@ export const priorityIcons: Record<string, LucideIcon> = {
   CRITICAL: AlertTriangle,
 };
 
-export const statusIcons: Record<string, LucideIcon> = {
+export const statusIcons: Record<IssueStatus, LucideIcon> = {
   BACKLOG: CircleDashed,
   TO_DO: Circle,
   IN_PROGRESS: Circle,
   DONE: CheckCircle,
   CANCELED: XCircle,
   DUPLICATE: Info,
+};
+
+export const groupByIcons: Record<IssueGroupBy, LucideIcon> = {
+  status: ChartPie,
+  priority: Signal,
+  project: Box,
+  none: Rows3,
+};
+
+export const sortByIcons: Record<IssueSortBy, LucideIcon> = {
+  status: ChartPie,
+  priority: Signal,
+  title: CaseSensitive,
+  createdAt: Calendar,
 };
 
 export const noneProjectIcon = SquareDashed;
@@ -58,7 +77,7 @@ const colorMap = {
   project: 'text-gray-400',
 };
 
-const createIcon = (icon: LucideIcon, size: number = 4, color: string) => {
+const createIcon = (icon: LucideIcon, size: number = 4, color?: string) => {
   return React.createElement(icon, {
     className: `h-${size} w-${size} ${color}`,
   });
@@ -88,4 +107,14 @@ export const getProjectIcon = (projectId: string, size: number = 4) => {
     icon = noneProjectIcon;
   }
   return createIcon(icon, size, colorMap.project);
+};
+
+export const getGroupByIcon = (groupBy: IssueGroupBy) => {
+  const icon = groupByIcons[groupBy];
+  return createIcon(icon);
+};
+
+export const getSortByIcon = (sortBy: IssueSortBy) => {
+  const icon = sortByIcons[sortBy];
+  return createIcon(icon);
 };

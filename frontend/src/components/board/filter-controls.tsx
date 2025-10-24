@@ -13,6 +13,8 @@ import {
   getStatusIcon,
   getPriorityIcon,
   getProjectIcon,
+  getGroupByIcon,
+  getSortByIcon,
 } from '@/constants/issue';
 import { useProjects } from '@/hooks/use-projects';
 import { IssuesQueryConfig } from '@/hooks/use-issues';
@@ -91,11 +93,13 @@ export default function FilterControls({
 
   const groupByOptions = ISSUE_GROUP_BY.map(value => ({
     value,
+    icon: getGroupByIcon(value),
     label: ISSUE_GROUP_BY_LABELS[value],
   }));
 
   const sortByOptions = ISSUE_SORT_BY.map(value => ({
     value,
+    icon: getSortByIcon(value),
     label: ISSUE_SORT_BY_LABELS[value],
   }));
 
@@ -160,7 +164,7 @@ export default function FilterControls({
         value={config.groupBy || 'status'}
         onValueChange={handleGroupByChange}
       >
-        <SelectTrigger className="[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300 select-none rounded-sm">
+        <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100">
           <SelectValue>
             <SquareKanban className="h-5 w-5 text-primary" />
           </SelectValue>
@@ -168,6 +172,7 @@ export default function FilterControls({
         <SelectContent>
           {groupByOptions.map(option => (
             <SelectItem key={option.value} value={option.value}>
+              {option.icon}
               {option.label}
             </SelectItem>
           ))}
@@ -178,7 +183,7 @@ export default function FilterControls({
         value={config.sortBy || 'createdAt'}
         onValueChange={handleSortByChange}
       >
-        <SelectTrigger className="[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300 select-none rounded-sm">
+        <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100">
           <SelectValue>
             <ArrowUpDown className="h-5 w-5 text-primary" />
           </SelectValue>
@@ -186,6 +191,7 @@ export default function FilterControls({
         <SelectContent>
           {sortByOptions.map(option => (
             <SelectItem key={option.value} value={option.value}>
+              {option.icon}
               {option.label}
             </SelectItem>
           ))}
