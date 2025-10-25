@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.strukfit.taskmanager.v1.user.User;
@@ -19,7 +20,8 @@ public class WorkspaceService {
     private WorkspaceMapper workspaceMapper;
 
     public List<Workspace> getAllForUser(User user) {
-        return workspaceRepository.findByUser(user);
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        return workspaceRepository.findByUser(user, sort);
     }
 
     public Workspace getById(Long id, User user) {
