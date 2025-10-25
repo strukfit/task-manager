@@ -41,6 +41,12 @@ import {
   MultiSelectValue,
 } from '../ui/multi-select';
 import { useMemo } from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from '../ui/tooltip';
 
 interface FilterControlsProps {
   config: IssuesQueryConfig;
@@ -138,73 +144,112 @@ export default function FilterControls({
   };
 
   return (
-    <div className="flex flex-row mb-2 gap-1">
-      <MultiSelect onValuesChange={handleFilterChange}>
-        <MultiSelectTrigger
-          disabled={isLoading}
-          className="w-full max-w-[400px]"
+    <TooltipProvider>
+      <div className="flex flex-row mb-2 gap-1">
+        <MultiSelect onValuesChange={handleFilterChange}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <MultiSelectTrigger
+                disabled={isLoading}
+                className="w-full max-w-[400px]"
+              >
+                <MultiSelectValue placeholder="Filter By..." />
+              </MultiSelectTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Filter by</p>
+            </TooltipContent>
+          </Tooltip>
+          <MultiSelectContent>
+            {filterOptions.map(group => (
+              <MultiSelectGroup key={group.heading} heading={group.heading}>
+                {group.options.map(({ value, label, icon }) => (
+                  <MultiSelectItem key={value} value={value}>
+                    {icon}
+                    {label}
+                  </MultiSelectItem>
+                ))}
+              </MultiSelectGroup>
+            ))}
+          </MultiSelectContent>
+        </MultiSelect>
+
+        <Select
+          value={config.groupBy || 'status'}
+          onValueChange={handleGroupByChange}
         >
-          <MultiSelectValue placeholder="Filter By..." />
-        </MultiSelectTrigger>
-        <MultiSelectContent>
-          {filterOptions.map(group => (
-            <MultiSelectGroup key={group.heading} heading={group.heading}>
-              {group.options.map(({ value, label, icon }) => (
-                <MultiSelectItem key={value} value={value}>
-                  {icon}
-                  {label}
-                </MultiSelectItem>
-              ))}
-            </MultiSelectGroup>
-          ))}
-        </MultiSelectContent>
-      </MultiSelect>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100">
+                <SelectValue>
+                  <SquareKanban className="h-5 w-5 text-primary" />
+                </SelectValue>
+              </SelectTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>
+                Group by:{' '}
+                {groupByOptions.find(o => o.value === config.groupBy)?.label}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          <SelectContent>
+            {groupByOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.icon}
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select
-        value={config.groupBy || 'status'}
-        onValueChange={handleGroupByChange}
-      >
-        <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100">
-          <SelectValue>
-            <SquareKanban className="h-5 w-5 text-primary" />
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {groupByOptions.map(option => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.icon}
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select
+          value={config.sortBy || 'createdAt'}
+          onValueChange={handleSortByChange}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100">
+                <SelectValue>
+                  <ArrowUpDown className="h-5 w-5 text-primary" />
+                </SelectValue>
+              </SelectTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>
+                Sort by:{' '}
+                {sortByOptions.find(o => o.value === config.sortBy)?.label}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          <SelectContent>
+            {sortByOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.icon}
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select
-        value={config.sortBy || 'createdAt'}
-        onValueChange={handleSortByChange}
-      >
-        <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100">
-          <SelectValue>
-            <ArrowUpDown className="h-5 w-5 text-primary" />
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {sortByOptions.map(option => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.icon}
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Button onClick={handleSortOrderToggle} variant="outline">
-        {config.sortOrder === 'asc' ? (
-          <ArrowDownNarrowWide className="h-5 w-5" />
-        ) : (
-          <ArrowDownWideNarrow className="h-5 w-5" />
-        )}
-      </Button>
-    </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button onClick={handleSortOrderToggle} variant="outline">
+              {config.sortOrder === 'asc' ? (
+                <ArrowDownNarrowWide className="h-5 w-5" />
+              ) : (
+                <ArrowDownWideNarrow className="h-5 w-5" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              Sort order:{' '}
+              {config.sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
   );
 }
