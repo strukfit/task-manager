@@ -170,9 +170,12 @@ export const useIssues = (
 ) => {
   const queryClient = useQueryClient();
 
+  const { enabled = true } = config;
+
   const issuesQuery = useQuery<IssuesResponse, AxiosError>({
     queryKey: QUERY_KEYS.issuesList(workspaceId, config),
     queryFn: () => getIssues(workspaceId, config),
+    enabled,
     staleTime: 1000 * 60 * 5,
     retry: 2,
   });

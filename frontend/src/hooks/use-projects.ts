@@ -172,9 +172,12 @@ export const useProjects = (
 ) => {
   const queryClient = useQueryClient();
 
+  const { enabled = true } = config;
+
   const projectsQuery = useQuery<Pagination<ProjectsResponse>, AxiosError>({
     queryKey: QUERY_KEYS.projectsList(workspaceId, config),
     queryFn: () => getProjects(workspaceId, config),
+    enabled,
     staleTime: 1000 * 60 * 5,
     retry: 2,
   });

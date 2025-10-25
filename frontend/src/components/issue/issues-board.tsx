@@ -1,14 +1,3 @@
-import {
-  getPriorityIcon,
-  getProjectIcon,
-  getStatusIcon,
-  ISSUE_PRIORITIES,
-  ISSUE_PRIORITY_LABELS,
-  ISSUE_STATUS_LABELS,
-  ISSUE_STATUSES,
-  IssuePriority,
-  IssueStatus,
-} from '@/constants/issue';
 import { IssuesQueryConfig, useIssues } from '@/hooks/use-issues';
 import { useCallback, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
@@ -31,6 +20,7 @@ import { useProjects } from '@/hooks/use-projects';
 import { IssueCreate, IssueEdit } from '@/schemas/issue';
 import FilterControls from '../board/filter-controls';
 import { Loader2 } from 'lucide-react';
+import { GROUPING_CONFIG } from '@/constants/issue/issue-grouping';
 
 export default function IssuesBoard() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -48,6 +38,9 @@ export default function IssuesBoard() {
     projectIds: projectId ? [Number(projectId)] : undefined,
   });
 
+  const { groupBy } = config;
+  const strategy = GROUPING_CONFIG[groupBy || 'status'];
+
   const [localColumns, setLocalColumns] = useState<Columns | null>(null);
 
   const [activeNode, setActiveNode] = useState<React.ReactNode | null>(null);
@@ -58,55 +51,31 @@ export default function IssuesBoard() {
     updateIssue,
     isLoading: issuesLoading,
   } = useIssues(workspaceId, config);
-  const { data: projects, isLoading: projectsLoading } =
-    useProjects(workspaceId);
+  const { data: projects, isLoading: projectsLoading } = useProjects(
+    workspaceId,
+    { enabled: groupBy === 'project' }
+  );
+
+  const items = useMemo(() => {
+    const base =
+      groupBy === 'project' ? strategy.getItems(projects) : strategy.getItems();
+
+    const extra = strategy.getExtraItems?.() || [];
+    return [...base, ...extra];
+  }, [groupBy, projects, strategy]);
 
   const memoColumns = useMemo(() => {
-    const newColumns: Columns = {};
-    if (config.groupBy === 'status') {
-      ISSUE_STATUSES.forEach(status => {
-        newColumns[status] = {
-          id: status,
-          name: ISSUE_STATUS_LABELS[status],
-          icon: getStatusIcon(status),
-          issues: issues[status] || [],
-        };
-      });
-    } else if (config.groupBy === 'priority') {
-      ISSUE_PRIORITIES.forEach(priority => {
-        newColumns[priority] = {
-          id: priority,
-          name: ISSUE_PRIORITY_LABELS[priority],
-          icon: getPriorityIcon(priority),
-          issues: issues[priority] || [],
-        };
-      });
-    } else if (config.groupBy === 'project') {
-      projects.forEach(project => {
-        const projectId = project.id.toString();
-        const projectName = project.name;
-        newColumns[projectId] = {
-          id: projectId,
-          name: projectName,
-          icon: getProjectIcon(projectId),
-          issues: issues[projectName] || [],
-        };
-      });
-      newColumns['-1'] = {
-        id: '-1',
-        name: 'No project',
-        icon: getProjectIcon('-1'),
-        issues: issues['-1'] || [],
+    const columns: Columns = {};
+    items.forEach(item => {
+      columns[item.id] = {
+        id: item.id,
+        name: item.name,
+        icon: item.icon,
+        issues: issues[item.key] || [],
       };
-    } else if (config.groupBy === 'none') {
-      newColumns['all'] = {
-        id: 'all',
-        name: 'All Issues',
-        issues: issues['all'] || [],
-      };
-    }
-    return newColumns;
-  }, [issues, config.groupBy, projects]);
+    });
+    return columns;
+  }, [items, issues]);
 
   const columns = localColumns ?? memoColumns;
 
@@ -162,14 +131,10 @@ export default function IssuesBoard() {
         i => i.id.toString() === activeId
       );
       sourceIssues.splice(sourceIndex, 1);
-      const updatedIssue: IssueEdit = { ...activeIssue };
-      if (config.groupBy === 'status') {
-        updatedIssue.status = overContainer as IssueStatus;
-      } else if (config.groupBy === 'priority') {
-        updatedIssue.priority = overContainer as IssuePriority;
-      } else if (config.groupBy === 'project') {
-        updatedIssue.projectId = overContainer as number;
-      }
+      const updatedIssue: IssueEdit = {
+        ...activeIssue,
+        ...strategy.getFieldUpdate(overContainer.toString()),
+      };
       destIssues.splice(overIndex, 0, updatedIssue);
 
       const updatedColumns: Columns = {
@@ -194,18 +159,11 @@ export default function IssuesBoard() {
         setLocalColumns(currentColumns);
       }
     },
-    [localColumns, memoColumns, config.groupBy, updateIssue]
+    [strategy, localColumns, memoColumns, updateIssue]
   );
 
   const openDialog = (initValue: string) => {
-    const initValues: Partial<IssueCreate> = {};
-    if (config.groupBy === 'status') {
-      initValues.status = initValue as IssueStatus;
-    } else if (config.groupBy === 'priority') {
-      initValues.priority = initValue as IssuePriority;
-    } else if (config.groupBy === 'project') {
-      initValues.projectId = Number(initValue);
-    }
+    const initValues = strategy.getFieldUpdate(initValue);
     setDialogInitValues(initValues);
     setDialogOpen(true);
   };
