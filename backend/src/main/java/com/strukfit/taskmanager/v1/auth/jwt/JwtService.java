@@ -22,7 +22,7 @@ public class JwtService {
     public String generateAccessToken(User user) {
 
         return Jwts.builder()
-                .subject(user.getUsername())
+                .subject(user.getId().toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenTtl * 1000))
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), Jwts.SIG.HS256)

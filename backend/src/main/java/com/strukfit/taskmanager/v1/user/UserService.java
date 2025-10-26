@@ -1,9 +1,6 @@
 package com.strukfit.taskmanager.v1.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +8,7 @@ import com.strukfit.taskmanager.v1.user.dto.UserRegisterDTO;
 import com.strukfit.taskmanager.v1.user.dto.UserUpdateDTO;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
     @Autowired
     private UserRepository userRepository;
 
@@ -37,8 +34,11 @@ public class UserService implements UserDetailsService {
             }
         }
 
-        if (dto.getPassword() != null) {
-            user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        if (dto.getEmail() != null && !user.getEmail().equals(dto.getEmail())) {
+            var existingUser = userRepository.findByEmail(dto.getEmail());
+            if (existingUser.isPresent()) {
+                throw new RuntimeException("User with this email already exists");
+            }
         }
 
         userMapper.updateUserFromDTO(dto, user);
@@ -51,6 +51,20 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
+    public User updatePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        return userRepository.save(user);
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     public User findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
@@ -58,14 +72,5 @@ public class UserService implements UserDetailsService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User with this email address not found"));
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found: " + username);
-        }
-        return user;
     }
 }

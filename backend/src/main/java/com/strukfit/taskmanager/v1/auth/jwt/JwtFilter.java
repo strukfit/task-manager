@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.lang.NonNull;
 
+import com.strukfit.taskmanager.v1.user.User;
 import com.strukfit.taskmanager.v1.user.UserService;
 
 import jakarta.servlet.FilterChain;
@@ -35,18 +36,24 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            if (jwtService.validateAccessToken(token)) {
-                String username = jwtService.getUsernameFromToken(token);
-                UserDetails userDetails = userService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                        null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
+            if (!jwtService.validateAccessToken(token)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Invalid or expired JWT token");
                 return;
             }
+
+            String userIdStr = jwtService.getUsernameFromToken(token);
+            Long userId = Long.parseLong(userIdStr);
+
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                User user = userService.findById(userId);
+                UserDetails userDetails = user;
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+                        null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+
         }
         filterChain.doFilter(request, response);
     }
