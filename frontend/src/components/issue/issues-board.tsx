@@ -1,6 +1,6 @@
 import { IssuesQueryConfig, useIssues } from '@/hooks/use-issues';
-import { useCallback, useMemo, useState } from 'react';
-import { useParams } from 'react-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router';
 
 import {
   DndContext,
@@ -21,6 +21,7 @@ import { IssueCreate, IssueEdit } from '@/schemas/issue';
 import FilterControls from '../board/filter-controls';
 import { Loader2 } from 'lucide-react';
 import { GROUPING_CONFIG } from '@/constants/issue/issue-grouping';
+import { IssueGroupBy, IssuePriority, IssueStatus } from '@/constants/issue';
 
 export default function IssuesBoard() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -31,14 +32,20 @@ export default function IssuesBoard() {
       workspaceId: string;
       projectId: string;
     }>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const projectId = Number(projectIdParam);
+  const params = Object.fromEntries(searchParams.entries());
 
   const [config, setConfig] = useState<IssuesQueryConfig>({
-    groupBy: 'status',
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-    projectIds: projectId ? [Number(projectId)] : undefined,
+    groupBy: (params.groupBy as IssueGroupBy) || 'status',
+    sortBy: params.sortBy || 'createdAt',
+    sortOrder: params.sortOrder as 'asc' | 'desc',
+    statuses: params.statuses?.split(',') as IssueStatus[] | undefined,
+    priorities: params.priorities?.split(',') as IssuePriority[] | undefined,
+    projectIds: projectId
+      ? [Number(projectId)]
+      : params.projectIds?.split(',').map(Number),
   });
 
   const { groupBy } = config;
@@ -89,6 +96,24 @@ export default function IssuesBoard() {
       },
     })
   );
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (config.groupBy) params.set('groupBy', config.groupBy);
+    if (config.sortBy) params.set('sortBy', config.sortBy);
+    if (config.sortOrder) params.set('sortOrder', config.sortOrder);
+    if (config.statuses?.length)
+      params.set('statuses', config.statuses.join(','));
+    if (config.priorities?.length)
+      params.set('priorities', config.priorities.join(','));
+    if (!projectId && config.projectIds?.length)
+      params.set('projectIds', config.projectIds.join(','));
+
+    if (params.toString() !== searchParams.toString()) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [config, projectId, searchParams, setSearchParams]);
 
   const onDragStart = useCallback((event: DragStartEvent) => {
     const element = event.active.data.current?.element;

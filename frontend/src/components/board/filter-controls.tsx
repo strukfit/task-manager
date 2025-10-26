@@ -116,6 +116,14 @@ export default function FilterControls({
     return options;
   }, [projects, projectId]);
 
+  const filterSelectedValues = useMemo(() => {
+    const values: string[] = [];
+    values.push(...(config.statuses ?? []));
+    values.push(...(config.priorities ?? []));
+    if (!projectId) values.push(...(config.projectIds?.map(String) ?? []));
+    return values;
+  }, [projectId, config.statuses, config.priorities, config.projectIds]);
+
   const groupByOptions = useMemo(() => {
     const options = ISSUE_GROUP_BY.map(value => {
       if (projectId && value === 'project') return null;
@@ -176,7 +184,10 @@ export default function FilterControls({
   return (
     <TooltipProvider>
       <div className="flex flex-row mb-2 gap-1">
-        <MultiSelect onValuesChange={handleFilterChange}>
+        <MultiSelect
+          values={filterSelectedValues}
+          onValuesChange={handleFilterChange}
+        >
           <Tooltip>
             <TooltipTrigger asChild>
               <MultiSelectTrigger
