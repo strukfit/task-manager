@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProjectById } from '@/hooks/use-projects';
 import { editProjectSchema, Project, ProjectEdit } from '@/schemas/project';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { Ellipsis, Loader2, Trash } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -29,6 +29,8 @@ import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 import { useBoardLayout } from '@/hooks/use-board-layout';
 
+type PageTabs = 'overview' | 'issues';
+
 export default function ProjectOverviewPage() {
   const { workspaceId, projectId } = useParams<{
     workspaceId: string;
@@ -41,7 +43,9 @@ export default function ProjectOverviewPage() {
     isLoading: projectLoading,
   } = useProjectById(Number(workspaceId), Number(projectId));
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'issues'>('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as PageTabs | null) ?? 'overview';
+
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { setHeader } = useBoardLayout();
@@ -54,6 +58,20 @@ export default function ProjectOverviewPage() {
       description: project?.description || '',
     },
   });
+
+  const setActiveTab = useCallback(
+    (tab: PageTabs) => {
+      setSearchParams(
+        prev => {
+          const params = new URLSearchParams(prev);
+          params.set('tab', tab);
+          return params;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
 
   useEffect(() => {
     setHeader(
@@ -73,23 +91,19 @@ export default function ProjectOverviewPage() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <Tabs value={activeTab}>
+        <Tabs
+          value={activeTab}
+          onValueChange={value => setActiveTab(value as PageTabs)}
+        >
           <TabsList>
-            <TabsTrigger
-              value="overview"
-              onClick={() => setActiveTab('overview')}
-            >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="issues" onClick={() => setActiveTab('issues')}>
-              Issues
-            </TabsTrigger>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="issues">Issues</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
     );
     return () => setHeader(null);
-  }, [setHeader, project, workspaceId, activeTab]);
+  }, [setHeader, project, workspaceId, activeTab, setActiveTab]);
 
   useEffect(() => {
     if (project) {

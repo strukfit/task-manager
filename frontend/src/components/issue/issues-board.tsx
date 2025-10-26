@@ -97,23 +97,26 @@ export default function IssuesBoard() {
     })
   );
 
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    if (config.groupBy) params.set('groupBy', config.groupBy);
-    if (config.sortBy) params.set('sortBy', config.sortBy);
-    if (config.sortOrder) params.set('sortOrder', config.sortOrder);
-    if (config.statuses?.length)
-      params.set('statuses', config.statuses.join(','));
-    if (config.priorities?.length)
-      params.set('priorities', config.priorities.join(','));
-    if (!projectId && config.projectIds?.length)
-      params.set('projectIds', config.projectIds.join(','));
-
-    if (params.toString() !== searchParams.toString()) {
-      setSearchParams(params, { replace: true });
-    }
-  }, [config, projectId, searchParams, setSearchParams]);
+  useEffect(
+    () =>
+      setSearchParams(
+        prev => {
+          const params = new URLSearchParams(prev);
+          if (config.groupBy) params.set('groupBy', config.groupBy);
+          if (config.sortBy) params.set('sortBy', config.sortBy);
+          if (config.sortOrder) params.set('sortOrder', config.sortOrder);
+          if (config.statuses?.length)
+            params.set('statuses', config.statuses.join(','));
+          if (config.priorities?.length)
+            params.set('priorities', config.priorities.join(','));
+          if (!projectId && config.projectIds?.length)
+            params.set('projectIds', config.projectIds.join(','));
+          return params;
+        },
+        { replace: true }
+      ),
+    [config, projectId, searchParams, setSearchParams]
+  );
 
   const onDragStart = useCallback((event: DragStartEvent) => {
     const element = event.active.data.current?.element;
