@@ -157,6 +157,8 @@ export default function IssuesBoard() {
         const error = err as Error;
         toast(error.message || 'Failed to update issue');
         setLocalColumns(currentColumns);
+      } finally {
+        setLocalColumns(null);
       }
     },
     [strategy, localColumns, memoColumns, updateIssue]

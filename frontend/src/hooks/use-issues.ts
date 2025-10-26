@@ -63,7 +63,7 @@ const useCreateIssueMutation = (
         }
       );
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.issuesList(workspaceId, config),
+        queryKey: QUERY_KEYS.issues(workspaceId),
       });
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.issue(workspaceId, newIssue.id),
@@ -106,7 +106,7 @@ const useUpdateIssueMutation = (
         }
       );
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.issuesList(workspaceId, config),
+        queryKey: QUERY_KEYS.issues(workspaceId),
       });
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.issue(workspaceId, updatedIssue.id),
@@ -156,7 +156,7 @@ const useDeleteIssueMutation = (
     },
     onSuccess: (_data, issueId) => {
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.issuesList(workspaceId, config),
+        queryKey: QUERY_KEYS.issues(workspaceId),
       });
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.issue(workspaceId, issueId),
