@@ -18,14 +18,13 @@ import com.strukfit.taskmanager.v1.issue.enums.Status;
 import com.strukfit.taskmanager.v1.project.Project;
 import com.strukfit.taskmanager.v1.project.ProjectRepository;
 import com.strukfit.taskmanager.v1.user.User;
+import com.strukfit.taskmanager.v1.utils.CriteriaUtils;
 import com.strukfit.taskmanager.v1.workspace.Workspace;
 import com.strukfit.taskmanager.v1.workspace.WorkspaceRepository;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 
 @Service
 public class IssueService {
@@ -83,29 +82,6 @@ public class IssueService {
         issue.setProject(project);
     }
 
-    private Expression<?> getSortField(String sortBy, Root<Issue> root, CriteriaBuilder cb) {
-        if ("priority".equalsIgnoreCase(sortBy)) {
-            Expression<String> priority = root.get("priority");
-            CriteriaBuilder.Case<Integer> priorityCase = cb.selectCase();
-            for (Priority p : Priority.values()) {
-                priorityCase.when(cb.equal(priority, p.name()), p.ordinal());
-            }
-            return priorityCase.otherwise(0);
-        }
-
-        switch (sortBy.toLowerCase()) {
-            case "title":
-                return root.get("title");
-            case "status":
-                return root.get("status");
-            case "createdat":
-                return root.get("createdAt");
-            default:
-                return root.get("createdAt");
-        }
-
-    }
-
     private Specification<Issue> buildSpecification(Workspace workspace,
             List<Long> projectIds,
             List<Status> statuses,
@@ -137,7 +113,13 @@ public class IssueService {
             }
 
             if (query != null && sortBy != null && !sortBy.isEmpty()) {
-                Expression<?> sortField = getSortField(sortBy, root, cb);
+                Expression<?> sortField = switch (sortBy.toLowerCase()) {
+                    case "priority" -> CriteriaUtils.mapEnumToOrdinal(root, "priority", Priority.class, cb);
+                    case "status" -> CriteriaUtils.mapEnumToOrdinal(root, "status", Status.class, cb);
+                    case "title" -> root.get("title");
+                    case "createdat" -> root.get("createdAt");
+                    default -> root.get("createdAt");
+                };
                 Order order = "asc".equalsIgnoreCase(sortOrder) ? cb.asc(sortField) : cb.desc(sortField);
                 query.orderBy(order);
             }
