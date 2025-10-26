@@ -149,7 +149,11 @@ export default function FilterControls({
       ...config,
       statuses: statuses.length > 0 ? statuses : undefined,
       priorities: priorities.length > 0 ? priorities : undefined,
-      projectIds: projectIds.length > 0 ? projectIds : undefined,
+      projectIds: projectId
+        ? [projectId]
+        : projectIds.length > 0
+          ? projectIds
+          : undefined,
     });
   };
 
