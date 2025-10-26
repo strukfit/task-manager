@@ -11,7 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProjectById } from '@/hooks/use-projects';
-import { editProjectSchema, Project } from '@/schemas/project';
+import { editProjectSchema, Project, ProjectEdit } from '@/schemas/project';
 import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { Ellipsis, Loader2, Trash } from 'lucide-react';
@@ -97,7 +97,7 @@ export default function ProjectOverviewPage() {
     }
   }, [project, form]);
 
-  const handleSave = async (field: keyof Project, value: string) => {
+  const handleSave = async (field: keyof ProjectEdit, value: string) => {
     if (!project) return;
     try {
       await updateProject({
@@ -165,7 +165,7 @@ export default function ProjectOverviewPage() {
                       </DropdownMenu>
                     </div>
                     <CardTitle className="text-2xl px-6">
-                      <EditableText<Project>
+                      <EditableText<ProjectEdit>
                         fieldName="name"
                         onSave={handleSave}
                         editor="input"
@@ -176,7 +176,7 @@ export default function ProjectOverviewPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <EditableText<Project>
+                    <EditableText<ProjectEdit>
                       fieldName="description"
                       onSave={handleSave}
                       editor="textarea"
@@ -201,7 +201,7 @@ export default function ProjectOverviewPage() {
         </div>
       </FormProvider>
       <ConfirmationDialog
-        title="Delete Issue"
+        title="Delete Project"
         description={`Are you sure you want to delete the project "${project?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         onConfirm={handleDelete}

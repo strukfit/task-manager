@@ -14,7 +14,7 @@ export const projectSchema = z.object({
 });
 
 export const createProjectSchema = projectSchema.omit({ id: true });
-export const editProjectSchema = projectSchema;
+export const editProjectSchema = projectSchema.omit({ createdAt: true });
 
 export const projectsResponseSchema = z.array(projectSchema);
 

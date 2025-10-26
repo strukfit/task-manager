@@ -52,17 +52,30 @@ interface FilterControlsProps {
   config: IssuesQueryConfig;
   setConfig: (config: IssuesQueryConfig) => void;
   workspaceId: number;
+  projectId?: number;
 }
+
+type Options = {
+  heading: string;
+  options: {
+    value: string;
+    icon: React.ReactNode;
+    label: string;
+  }[];
+}[];
 
 export default function FilterControls({
   config,
   setConfig,
   workspaceId,
+  projectId,
 }: FilterControlsProps) {
-  const { data: projects, isLoading } = useProjects(workspaceId);
+  const { data: projects, isLoading } = useProjects(workspaceId, {
+    enabled: !projectId,
+  });
 
-  const filterOptions = useMemo(
-    () => [
+  const filterOptions = useMemo(() => {
+    const options: Options = [
       {
         heading: 'Issue Statuses',
         options: ISSUE_STATUSES.map(status => ({
@@ -79,12 +92,18 @@ export default function FilterControls({
           label: ISSUE_PRIORITY_LABELS[priority],
         })),
       },
-      {
+    ];
+    if (!projectId && projects) {
+      options.push({
         heading: 'Projects',
         options: [
-          { value: '-1', icon: getProjectIcon('-1'), label: 'No Project' },
+          {
+            value: String(-1),
+            icon: getProjectIcon(String(-1)),
+            label: 'No Project',
+          },
           ...projects.map(project => {
-            const projectId = project.id.toString();
+            const projectId = String(project.id);
             return {
               value: projectId,
               icon: getProjectIcon(projectId),
@@ -92,16 +111,23 @@ export default function FilterControls({
             };
           }),
         ],
-      },
-    ],
-    [projects]
-  );
+      });
+    }
+    return options;
+  }, [projects, projectId]);
 
-  const groupByOptions = ISSUE_GROUP_BY.map(value => ({
-    value,
-    icon: getGroupByIcon(value),
-    label: ISSUE_GROUP_BY_LABELS[value],
-  }));
+  const groupByOptions = useMemo(() => {
+    const options = ISSUE_GROUP_BY.map(value => {
+      if (projectId && value === 'project') return null;
+      return {
+        value,
+        icon: getGroupByIcon(value),
+        label: ISSUE_GROUP_BY_LABELS[value],
+      };
+    });
+
+    return options;
+  }, [projectId]);
 
   const sortByOptions = ISSUE_SORT_BY.map(value => ({
     value,
@@ -189,17 +215,20 @@ export default function FilterControls({
             <TooltipContent side="bottom">
               <p>
                 Group by:{' '}
-                {groupByOptions.find(o => o.value === config.groupBy)?.label}
+                {groupByOptions.find(o => o?.value === config.groupBy)?.label}
               </p>
             </TooltipContent>
           </Tooltip>
           <SelectContent>
-            {groupByOptions.map(option => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.icon}
-                {option.label}
-              </SelectItem>
-            ))}
+            {groupByOptions.map(
+              option =>
+                option && (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.icon}
+                    {option.label}
+                  </SelectItem>
+                )
+            )}
           </SelectContent>
         </Select>
 

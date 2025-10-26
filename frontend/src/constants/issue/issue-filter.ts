@@ -11,7 +11,7 @@ export const ISSUE_GROUP_BY_LABELS: Record<IssueGroupBy, string> = {
   status: 'Status',
   priority: 'Priority',
   project: 'Project',
-  none: 'None',
+  none: 'All issues',
 } as const;
 
 export const ISSUE_SORT_BY = [

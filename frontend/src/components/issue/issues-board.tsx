@@ -26,10 +26,13 @@ export default function IssuesBoard() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogInitValues, setDialogInitValues] =
     useState<Partial<IssueCreate> | null>(null);
-  const { workspaceId: workspaceIdParam, projectId } = useParams<{
-    workspaceId: string;
-    projectId: string;
-  }>();
+  const { workspaceId: workspaceIdParam, projectId: projectIdParam } =
+    useParams<{
+      workspaceId: string;
+      projectId: string;
+    }>();
+
+  const projectId = Number(projectIdParam);
 
   const [config, setConfig] = useState<IssuesQueryConfig>({
     groupBy: 'status',
@@ -177,6 +180,7 @@ export default function IssuesBoard() {
           config={config}
           setConfig={setConfig}
           workspaceId={workspaceId}
+          projectId={projectId}
         />
       </div>
       {issuesLoading || projectsLoading ? (
