@@ -107,10 +107,13 @@ export default function IssuesBoard() {
           if (config.sortOrder) params.set('sortOrder', config.sortOrder);
           if (config.statuses?.length)
             params.set('statuses', config.statuses.join(','));
+          else params.delete('statuses');
           if (config.priorities?.length)
             params.set('priorities', config.priorities.join(','));
+          else params.delete('priorities');
           if (!projectId && config.projectIds?.length)
             params.set('projectIds', config.projectIds.join(','));
+          else params.delete('projectIds');
           return params;
         },
         { replace: true }
