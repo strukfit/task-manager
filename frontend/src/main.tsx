@@ -20,6 +20,7 @@ import PasswordResetPage from './pages/auth/password-reset';
 import BoardLayout from './components/board/board-layout';
 import ProfilePage from './pages/profile';
 import UserSidebarLayout from './components/user/user-sidebar-layout';
+import NotFoundPage from './pages/not-found';
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="issues/:issueId" element={<IssueOverviewPage />} />
             </Route>
           </Route>
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster />
