@@ -84,7 +84,7 @@ export default function WorkspacesPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem asChild>
-                <Link to={`/user/settings`}>
+                <Link to={`/profile`}>
                   <UserRoundPen className="h-4 w-4" />
                   Edit profile
                 </Link>

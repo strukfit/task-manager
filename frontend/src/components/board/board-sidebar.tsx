@@ -21,11 +21,14 @@ import {
 } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
 import {
-  Building2,
   ChevronDown,
+  File,
+  Files,
   Folders,
+  LogOutIcon,
   SquareKanban,
   SquarePen,
+  UserRoundPen,
 } from 'lucide-react';
 import { useWorkspaceById } from '@/hooks/use-workspaces';
 import { CreateIssueDialog } from '../issue/create-issue-dialog';
@@ -74,7 +77,7 @@ export default function BoardSidebar({
               size="sm"
               className={`flex rounded-sm ${isExpanded ? 'max-w-[70%]' : 'max-w-[100%]'}`}
             >
-              <Building2 className="h-4 w-4" />
+              <File className="h-4 w-4" />
               {isExpanded && (
                 <span className="text-sm font-semibold truncate">
                   {workspace.name}
@@ -85,12 +88,23 @@ export default function BoardSidebar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuItem asChild>
-              <Link to={`/workspaces/${workspaceId}/settings`}>Settings</Link>
+              <Link to={`/profile`}>
+                <UserRoundPen className="h-4 w-4" />
+                Edit profile
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/workspaces">Workspaces</Link>
+              <Link to="/workspaces">
+                <Files className="h-4 w-4" />
+                Workspaces
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout} asChild>
+              <div>
+                <LogOutIcon className="h-4 w-4" />
+                Logout
+              </div>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         {isExpanded && (

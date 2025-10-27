@@ -18,6 +18,7 @@ import IssueOverviewPage from './pages/board/issue-overview';
 import PasswordResetRequestPage from './pages/auth/password-reset-request';
 import PasswordResetPage from './pages/auth/password-reset';
 import BoardLayout from './components/board/board-layout';
+import ProfilePage from './pages/profile';
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ createRoot(document.getElementById('root')!).render(
               />
               <Route path="issues/:issueId" element={<IssueOverviewPage />} />
             </Route>
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

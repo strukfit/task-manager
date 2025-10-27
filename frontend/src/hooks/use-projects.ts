@@ -131,8 +131,12 @@ const useUpdateProjectMutation = (
 
       queryClient.setQueryData<Project>(
         QUERY_KEYS.project(workspaceId, updatedProject.id!),
-        oldProject =>
-          oldProject ? { ...oldProject, ...updatedProject } : updatedProject
+        oldProject => {
+          if (!oldProject) {
+            return updatedProject as Project;
+          }
+          return { ...oldProject, ...updatedProject };
+        }
       );
 
       return { previousProjects, previousProject };

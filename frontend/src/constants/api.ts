@@ -21,4 +21,9 @@ export const API_ROUTES = {
   projects: {
     projects: (workspaceId: number) => `workspaces/${workspaceId}/projects`,
   },
+  users: {
+    users: '/users',
+    profile: '/users/me',
+    password: '/users/me/password',
+  },
 } as const;

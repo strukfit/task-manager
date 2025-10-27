@@ -23,6 +23,7 @@ import React from 'react';
 import { IssueStatus } from './issue-status';
 import { IssuePriority } from './issue-priority';
 import { IssueGroupBy, IssueSortBy } from './issue-filter';
+import { createIcon } from '../common';
 
 export const priorityIcons: Record<IssuePriority, LucideIcon> = {
   NONE: Minus,
@@ -75,12 +76,6 @@ const colorMap = {
     DUPLICATE: 'text-purple-400',
   },
   project: 'text-gray-400',
-};
-
-const createIcon = (icon: LucideIcon, size: number = 4, color?: string) => {
-  return React.createElement(icon, {
-    className: `h-${size} w-${size} ${color}`,
-  });
 };
 
 export const getStatusIcon = (

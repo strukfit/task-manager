@@ -6,8 +6,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Check, Eye, EyeOff, X } from 'lucide-react';
-import { useForm, useWatch } from 'react-hook-form';
+import { Eye, EyeOff } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 import {
   LoginCreditentials,
   loginSchema,
@@ -15,15 +15,7 @@ import {
   signupSchema,
 } from '@/schemas/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-interface PasswordErrors {
-  length?: { message: string };
-  uppercase?: { message: string };
-  lowercase?: { message: string };
-  digit?: { message: string };
-  whitespace?: { message: string };
-  message?: string;
-}
+import { usePasswordValidation } from '@/hooks/use-password-validator';
 
 interface AuthFormProps extends React.ComponentProps<'div'> {
   type?: 'login' | 'signup';
@@ -51,6 +43,10 @@ export function AuthForm({
   });
 
   const { login, signup } = useAuth();
+  const { feedback, isValid: passwordValid } = usePasswordValidation(
+    form.control,
+    'password'
+  );
 
   const handleSubmit = async (
     data: LoginCreditentials | SignupCreditentials
@@ -67,26 +63,6 @@ export function AuthForm({
       toast(error.message || 'An error occurred');
     }
   };
-
-  const password = useWatch({
-    control: form.control,
-    name: 'password',
-    defaultValue: '',
-  });
-  const passwordErrors = form.formState.errors.password as
-    | PasswordErrors
-    | undefined;
-  const passwordNotEmpty = password.length > 0;
-  const passwordFeedback = {
-    validLength: passwordNotEmpty && !passwordErrors?.length,
-    hasUppercase: passwordNotEmpty && !passwordErrors?.uppercase,
-    hasLowercase: passwordNotEmpty && !passwordErrors?.lowercase,
-    hasDigit: passwordNotEmpty && !passwordErrors?.digit,
-    noWhitespace: passwordNotEmpty && !passwordErrors?.whitespace,
-  };
-
-  const checkMarkIcon = <Check className="h-4 w-4 text-green-500" />;
-  const crossIcon = <X className="h-4 w-4 text-red-500" />;
 
   return (
     <div
@@ -178,62 +154,24 @@ export function AuthForm({
           )}
           {isSignup && (
             <div className="text-sm space-y-1">
-              <p
-                className={cn(
-                  'flex items-center gap-2',
-                  passwordFeedback.validLength
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                )}
-              >
-                {passwordFeedback.validLength ? checkMarkIcon : crossIcon} 8-128
-                characters
-              </p>
-              <p
-                className={cn(
-                  'flex items-center gap-2',
-                  passwordFeedback.hasUppercase
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                )}
-              >
-                {passwordFeedback.hasUppercase ? checkMarkIcon : crossIcon}{' '}
-                Contains uppercase letter
-              </p>
-              <p
-                className={cn(
-                  'flex items-center gap-2',
-                  passwordFeedback.hasLowercase
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                )}
-              >
-                {passwordFeedback.hasLowercase ? checkMarkIcon : crossIcon}{' '}
-                Contains lowercase letter
-              </p>
-              <p
-                className={cn(
-                  'flex items-center gap-2',
-                  passwordFeedback.hasDigit ? 'text-green-500' : 'text-red-500'
-                )}
-              >
-                {passwordFeedback.hasDigit ? checkMarkIcon : crossIcon} Contains
-                digit
-              </p>
-              <p
-                className={cn(
-                  'flex items-center gap-2',
-                  passwordFeedback.noWhitespace
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                )}
-              >
-                {passwordFeedback.noWhitespace ? checkMarkIcon : crossIcon} No
-                whitespace
-              </p>
+              {feedback.map(rule => (
+                <p
+                  key={rule.key}
+                  className={cn(
+                    'flex items-center gap-2',
+                    rule.valid ? 'text-green-500' : 'text-red-500'
+                  )}
+                >
+                  {rule.getIcon(rule.valid)} {rule.text}
+                </p>
+              ))}
             </div>
           )}
-          <Button type="submit" className="w-full rounded-sm">
+          <Button
+            type="submit"
+            disabled={isSignup && !passwordValid}
+            className="w-full rounded-sm"
+          >
             {isSignup ? 'Sign up' : 'Login'}
           </Button>
         </form>
