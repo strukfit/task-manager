@@ -15,6 +15,7 @@ export const useAuth = () => {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
+    queryFn: () => Promise.reject('Not fetched — using initialData'),
     enabled: false,
     initialData: () => {
       const storedUser = storage.getItem('user');

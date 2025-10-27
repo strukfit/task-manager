@@ -47,6 +47,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from '../ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface FilterControlsProps {
   config: IssuesQueryConfig;
@@ -73,6 +74,8 @@ export default function FilterControls({
   const { data: projects, isLoading } = useProjects(workspaceId, {
     enabled: !projectId,
   });
+
+  const isMobile = useIsMobile();
 
   const filterOptions = useMemo(() => {
     const options: Options = [
@@ -181,26 +184,58 @@ export default function FilterControls({
     setConfig({ ...config, sortOrder: newSortOrder });
   };
 
+  const filterTrigger = (
+    <MultiSelectTrigger
+      disabled={isLoading}
+      className="w-full md:w-auto max-w-[400px]"
+    >
+      <MultiSelectValue placeholder="Filter By..." />
+    </MultiSelectTrigger>
+  );
+
+  const groupByTrigger = (
+    <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100 justify-center w-full md:w-auto">
+      <SelectValue>
+        <SquareKanban className="h-5 w-5 text-primary" />
+      </SelectValue>
+    </SelectTrigger>
+  );
+
+  const sortByTrigger = (
+    <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100 justify-center w-full md:w-auto">
+      <SelectValue>
+        <ArrowUpDown className="h-5 w-5 text-primary" />
+      </SelectValue>
+    </SelectTrigger>
+  );
+
+  const sortOrderButton = (
+    <Button onClick={handleSortOrderToggle} variant="outline">
+      {config.sortOrder === 'asc' ? (
+        <ArrowDownNarrowWide className="h-5 w-5" />
+      ) : (
+        <ArrowDownWideNarrow className="h-5 w-5" />
+      )}
+    </Button>
+  );
+
   return (
     <TooltipProvider>
-      <div className="flex flex-row mb-2 gap-1">
+      <div className="flex flex-col md:flex-row mb-2 gap-1">
         <MultiSelect
           values={filterSelectedValues}
           onValuesChange={handleFilterChange}
         >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <MultiSelectTrigger
-                disabled={isLoading}
-                className="w-full max-w-[400px]"
-              >
-                <MultiSelectValue placeholder="Filter By..." />
-              </MultiSelectTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Filter by</p>
-            </TooltipContent>
-          </Tooltip>
+          {isMobile ? (
+            filterTrigger
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>{filterTrigger}</TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Filter by</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <MultiSelectContent>
             {filterOptions.map(group => (
               <MultiSelectGroup key={group.heading} heading={group.heading}>
@@ -219,21 +254,19 @@ export default function FilterControls({
           value={config.groupBy || 'status'}
           onValueChange={handleGroupByChange}
         >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100">
-                <SelectValue>
-                  <SquareKanban className="h-5 w-5 text-primary" />
-                </SelectValue>
-              </SelectTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>
-                Group by:{' '}
-                {groupByOptions.find(o => o?.value === config.groupBy)?.label}
-              </p>
-            </TooltipContent>
-          </Tooltip>
+          {isMobile ? (
+            groupByTrigger
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>{groupByTrigger}</TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>
+                  Group by:{' '}
+                  {groupByOptions.find(o => o?.value === config.groupBy)?.label}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <SelectContent>
             {groupByOptions.map(
               option =>
@@ -251,21 +284,19 @@ export default function FilterControls({
           value={config.sortBy || 'createdAt'}
           onValueChange={handleSortByChange}
         >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <SelectTrigger className="[&>svg]:hidden select-none rounded-sm hover:bg-gray-100">
-                <SelectValue>
-                  <ArrowUpDown className="h-5 w-5 text-primary" />
-                </SelectValue>
-              </SelectTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>
-                Sort by:{' '}
-                {sortByOptions.find(o => o.value === config.sortBy)?.label}
-              </p>
-            </TooltipContent>
-          </Tooltip>
+          {isMobile ? (
+            sortByTrigger
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>{sortByTrigger}</TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>
+                  Sort by:{' '}
+                  {sortByOptions.find(o => o.value === config.sortBy)?.label}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <SelectContent>
             {sortByOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
@@ -276,23 +307,19 @@ export default function FilterControls({
           </SelectContent>
         </Select>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button onClick={handleSortOrderToggle} variant="outline">
-              {config.sortOrder === 'asc' ? (
-                <ArrowDownNarrowWide className="h-5 w-5" />
-              ) : (
-                <ArrowDownWideNarrow className="h-5 w-5" />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              Sort order:{' '}
-              {config.sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-            </p>
-          </TooltipContent>
-        </Tooltip>
+        {isMobile ? (
+          sortOrderButton
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>{sortOrderButton}</TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Sort order:{' '}
+                {config.sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
     </TooltipProvider>
   );

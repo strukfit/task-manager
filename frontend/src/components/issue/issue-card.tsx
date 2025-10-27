@@ -72,18 +72,18 @@ export default function IssueCard({ issue }: IssueCardProps) {
           {issue.title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col lg:flex-row p-2 pt-0 gap-1">
+      <CardContent className="flex flex-row p-2 pt-0 gap-1">
         <PrioritySelect
           form={form}
           onValueChange={v => handleSave('priority', v)}
           showValue={false}
-          className="p-2 !h-6"
+          className="p-2 md:!h-6"
         />
         {issue.project && (
           <Button
             size="sm"
             variant="outline"
-            className="items-center text-xs !h-6 max-w-[150px] rounded-sm"
+            className="items-center text-xs md:!h-6 max-w-[150px] rounded-sm"
             onClick={handleProjectClick}
           >
             <div className="shrink-0">

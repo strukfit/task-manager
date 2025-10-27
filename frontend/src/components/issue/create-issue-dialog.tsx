@@ -24,7 +24,7 @@ export function CreateIssueDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="p-4 w-fit min-w-xl !max-w-full">
+      <DialogContent className="p-4 w-fit md:min-w-xl max-w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base">New Issue</DialogTitle>
         </DialogHeader>

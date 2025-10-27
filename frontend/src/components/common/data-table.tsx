@@ -238,7 +238,7 @@ export function DataTable<
                   aria-disabled={isDeleted}
                 >
                   {isMobile && (
-                    <div className="flex items-center justify-between p-4 py-3 border-b border-gray-100 bg-gray-100">
+                    <TableCell className="flex items-center justify-between p-4 py-3 border-b border-gray-100 bg-gray-100">
                       {nameCell && (
                         <div className="font-medium">
                           {flexRender(
@@ -256,7 +256,7 @@ export function DataTable<
                           )}
                         </div>
                       )}
-                    </div>
+                    </TableCell>
                   )}
 
                   {!isMobile

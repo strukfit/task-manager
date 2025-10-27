@@ -46,6 +46,7 @@ export function PrioritySelect<T extends PriorityField>({
           '[&>svg]:hidden hover:bg-gray-100 hover:ring-1 hover:ring-gray-300 select-none rounded-sm',
           className
         )}
+        onClick={e => e.stopPropagation()}
       >
         <SelectValue placeholder="Select Priority">
           {priority && (

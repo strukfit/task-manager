@@ -212,18 +212,18 @@ export default function IssuesBoard() {
         />
       </div>
       {issuesLoading || projectsLoading ? (
-        <div className="flex flex-row justify-center w-screen">
+        <div className="flex flex-row justify-center w-full md:w-screen">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : (
-        <div className="flex flex-col w-fit">
+        <div className="flex flex-col md:w-fit">
           <DndContext
             sensors={sensors}
             collisionDetection={rectIntersection}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:flex lg:flex-row lg:mr-4 gap-2 w-fit">
+            <div className="grid md:grid-cols-3 lg:flex lg:flex-row lg:mr-4 gap-2 w-full md:w-fit">
               {Object.entries(columns).map(([columnId, column]) => (
                 <DroppableColumn
                   key={columnId}

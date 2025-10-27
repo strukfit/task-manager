@@ -78,37 +78,53 @@ export default function ProjectOverviewPage() {
 
   useEffect(() => {
     setHeader(
-      <div className="flex flex-row items-center gap-2">
-        <Breadcrumb className="ml-2">
+      <div className="flex flex-row items-center gap-2 w-full">
+        <Breadcrumb className="ml-2 flex-1 min-w-0">
           <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbPage>{workspace?.name || 'Workspace'}</BreadcrumbPage>
+            <BreadcrumbItem className="hidden sm:block">
+              <BreadcrumbPage className="truncate max-w-[100px]">
+                {workspace?.name || 'Workspace'}
+              </BreadcrumbPage>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
+            <BreadcrumbSeparator className="hidden sm:block" />
+
             <BreadcrumbItem>
-              <Link to={`/workspaces/${workspaceId}/projects`}>Projects</Link>
+              <Link
+                to={`/workspaces/${workspaceId}/projects`}
+                className="truncate"
+              >
+                Projects
+              </Link>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage className="max-w-xs truncate">
+              <BreadcrumbPage className="truncate max-w-[120px]">
                 {project?.name || 'Project'}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <Tabs
-          value={activeTab}
-          onValueChange={value => setActiveTab(value as PageTabs)}
-        >
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="issues">Issues</TabsTrigger>
-          </TabsList>
-        </Tabs>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden">
+              <Ellipsis className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="text-red-600"
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Delete project
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     );
     return () => setHeader(null);
-  }, [setHeader, project, workspace, workspaceId, activeTab, setActiveTab]);
+  }, [setHeader, project, workspace, workspaceId, setIsDeleteDialogOpen]);
 
   useEffect(() => {
     if (project) {
@@ -127,10 +143,9 @@ export default function ProjectOverviewPage() {
             ? value.trim() || undefined
             : project.description,
       });
+      toast.success('Project updated');
     } catch {
-      toast.error(
-        `Failed to update ${field === 'name' ? 'name' : 'description'}`
-      );
+      toast.error(`Failed to update ${field}`);
       form.setValue(field, project[field as keyof Project] as string);
     }
   };
@@ -148,8 +163,8 @@ export default function ProjectOverviewPage() {
 
   if (projectLoading) {
     return (
-      <div className="flex justify-center items-center p-4">
-        <Loader2 className="h-6 w-6 animate-spin" />
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -157,71 +172,89 @@ export default function ProjectOverviewPage() {
   return (
     <>
       <FormProvider {...form}>
-        <div className="flex flex-1 flex-col md:flex-row gap-4 p-0">
-          <Tabs value={activeTab} className="w-full">
-            <TabsContent value="overview">
-              <div className="flex-1 h-full">
-                <Card className="flex-1 flex flex-col rounded-sm h-full pt-2 pb-6">
-                  <CardHeader className="p-0">
-                    <div className="flex flex-row justify-end px-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8">
-                            <Ellipsis className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                          <DropdownMenuItem
-                            onClick={() => setIsDeleteDialogOpen(true)}
-                            asChild
-                          >
-                            <div>
-                              <Trash className="h-4 w-4" />
-                              Delete project
-                            </div>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <CardTitle className="text-2xl px-6">
+        <div className="flex flex-col gap-4 p-4 md:p-0">
+          <Tabs
+            value={activeTab}
+            onValueChange={value => setActiveTab(value as PageTabs)}
+          >
+            <TabsList className="grid w-full md:w-fit grid-cols-2">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="issues">Issues</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="mt-4">
+              <Card className="rounded-sm shadow-sm border-0 max-h-[80vh] overflow-y-auto">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl sm:text-2xl">
                       <EditableText<ProjectEdit>
                         fieldName="name"
                         onSave={handleSave}
                         editor="input"
-                        placeholder="No name"
-                        displayContent={v => v}
-                        displayContainerClassName=""
+                        placeholder="Project name"
+                        displayContent={v => (
+                          <span className="truncate">{v}</span>
+                        )}
                       />
                     </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <EditableText<ProjectEdit>
-                      fieldName="description"
-                      onSave={handleSave}
-                      editor="textarea"
-                      placeholder="Add description..."
-                      displayContent={(v, p) => (
-                        <div className={`prose ${!v ? 'text-gray-400' : ''}`}>
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {v || p}
-                          </ReactMarkdown>
-                        </div>
-                      )}
-                      displayContainerClassName="rounded"
-                    />
-                  </CardContent>
-                </Card>
-              </div>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hidden md:flex"
+                        >
+                          <Ellipsis className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => setIsDeleteDialogOpen(true)}
+                          className="text-red-600"
+                        >
+                          <Trash className="h-4 w-4 mr-2" />
+                          Delete project
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4 pb-6">
+                  <EditableText<ProjectEdit>
+                    fieldName="description"
+                    onSave={handleSave}
+                    editor="textarea"
+                    placeholder="Add description..."
+                    displayContent={(v, p) => (
+                      <div
+                        className={`prose prose-sm max-w-none ${!v ? 'text-gray-400' : ''}`}
+                      >
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {v || p}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                    displayContainerClassName="rounded min-h-[60px] max-h-[300px] overflow-y-auto"
+                    editorClassName="min-h-[100px] max-h-[300px]"
+                  />
+                </CardContent>
+              </Card>
             </TabsContent>
-            <TabsContent value="issues">
-              <IssuesBoard />
+
+            <TabsContent value="issues" className="mt-4">
+              <div className="h-full">
+                <IssuesBoard />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
       </FormProvider>
+
       <ConfirmationDialog
         title="Delete Project"
-        description={`Are you sure you want to delete the project "${project?.name}"? This action cannot be undone.`}
+        description={`Are you sure you want to delete "${project?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         onConfirm={handleDelete}
         open={isDeleteDialogOpen}

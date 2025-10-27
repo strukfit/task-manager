@@ -21,7 +21,7 @@ export default function SidebarShell({
   return (
     <SidebarProvider>
       {sidebar}
-      <SidebarInset className="max-w-[calc(100%-var(--sidebar-width))]">
+      <SidebarInset className="md:max-w-[calc(100%-var(--sidebar-width))]">
         <div className="h-screen flex flex-col w-full max-w-full">
           <header className="flex flex-row items-center p-4 pb-0 mb-2">
             <SidebarTrigger />

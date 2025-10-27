@@ -41,7 +41,7 @@ export default function WorkspacesPage() {
       <div className="flex flex-row items-center gap-2">
         <Breadcrumb className="ml-2">
           <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
+            <BreadcrumbItem className="block">
               <BreadcrumbPage className="text-xl font-bold">
                 Workspaces
               </BreadcrumbPage>
@@ -82,7 +82,7 @@ export default function WorkspacesPage() {
           {workspaces?.map(workspace => (
             <Card
               key={workspace.id}
-              className="rounded-sm cursor-pointer py-4 gap-2"
+              className="rounded-sm cursor-pointer py-4 gap-2 w-full"
               onClick={e => {
                 // Prevent navigation when clicking buttons or menu
                 if (
