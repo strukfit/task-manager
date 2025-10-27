@@ -88,7 +88,7 @@ export default function BoardSidebar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuItem asChild>
-              <Link to={`/profile`}>
+              <Link to="/profile" state={{ workspace }}>
                 <UserRoundPen className="h-4 w-4" />
                 Edit profile
               </Link>

@@ -19,6 +19,7 @@ import PasswordResetRequestPage from './pages/auth/password-reset-request';
 import PasswordResetPage from './pages/auth/password-reset';
 import BoardLayout from './components/board/board-layout';
 import ProfilePage from './pages/profile';
+import UserSidebarLayout from './components/user/user-sidebar-layout';
 
 const queryClient = new QueryClient();
 
@@ -36,7 +37,10 @@ createRoot(document.getElementById('root')!).render(
           />
           <Route path="/reset-password" element={<PasswordResetPage />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/workspaces" element={<Workspaces />} />
+            <Route element={<UserSidebarLayout />}>
+              <Route path="/workspaces" element={<Workspaces />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
             <Route path="/workspaces/create" element={<WorkspaceFormPage />} />
             <Route
               path="/workspaces/:workspaceId/edit"
@@ -51,7 +55,6 @@ createRoot(document.getElementById('root')!).render(
               />
               <Route path="issues/:issueId" element={<IssueOverviewPage />} />
             </Route>
-            <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

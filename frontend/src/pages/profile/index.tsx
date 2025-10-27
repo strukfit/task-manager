@@ -1,4 +1,11 @@
 // src/pages/profile/index.tsx
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -19,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePasswordValidation } from '@/hooks/use-password-validator';
 import { useUserProfile } from '@/hooks/use-user';
+import { useUserSidebarLayout } from '@/hooks/use-user-sidebar-layout';
 import { cn } from '@/lib/utils';
 import {
   ChangePasswordData,
@@ -26,13 +34,17 @@ import {
   EditProfileData,
   editUserProfileSchema,
 } from '@/schemas/user';
+import { Workspace } from '@/schemas/workspace';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link, useLocation } from 'react-router';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
+  const location = useLocation();
+  const workspace = location.state?.workspace as Workspace;
   const {
     data: profile,
     isLoading,
@@ -63,6 +75,8 @@ export default function ProfilePage() {
     'newPassword'
   );
 
+  const { setHeader } = useUserSidebarLayout();
+
   useEffect(() => {
     if (profile) {
       profileForm.reset({
@@ -71,6 +85,35 @@ export default function ProfilePage() {
       });
     }
   }, [profile, profileForm]);
+
+  useEffect(() => {
+    setHeader(
+      <div className="flex flex-row items-center gap-2">
+        <Breadcrumb className="ml-2">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <Link to={`/workspaces`}>Workspaces</Link>
+            </BreadcrumbItem>
+            {workspace && (
+              <>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <Link to={`/workspaces/${workspace.id}`}>
+                    {workspace.name || 'Workspace'}
+                  </Link>
+                </BreadcrumbItem>
+              </>
+            )}
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>User Settings</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+    );
+    return () => setHeader(null);
+  }, [workspace, setHeader]);
 
   const onSubmitProfile = async (data: EditProfileData) => {
     try {
@@ -101,9 +144,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container max-w-2xl py-8">
-      <h1 className="text-3xl font-bold mb-6">User Settings</h1>
-
+    <div className="flex justify-center w-3xl">
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="profile">Profile</TabsTrigger>
