@@ -28,20 +28,23 @@ import {
 import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 import { useBoardLayout } from '@/hooks/use-board-layout';
+import { useWorkspaceById } from '@/hooks/use-workspaces';
 
 type PageTabs = 'overview' | 'issues';
 
 export default function ProjectOverviewPage() {
-  const { workspaceId, projectId } = useParams<{
+  const { workspaceId: workspaceIdStr, projectId } = useParams<{
     workspaceId: string;
     projectId: string;
   }>();
+  const workspaceId = Number(workspaceIdStr);
   const {
     project,
     updateProject,
     deleteProject,
     isLoading: projectLoading,
-  } = useProjectById(Number(workspaceId), Number(projectId));
+  } = useProjectById(workspaceId, Number(projectId));
+  const { workspace } = useWorkspaceById(workspaceId);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = (searchParams.get('tab') as PageTabs | null) ?? 'overview';
@@ -79,7 +82,7 @@ export default function ProjectOverviewPage() {
         <Breadcrumb className="ml-2">
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbPage>Workspace</BreadcrumbPage>
+              <BreadcrumbPage>{workspace?.name || 'Workspace'}</BreadcrumbPage>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
@@ -87,7 +90,9 @@ export default function ProjectOverviewPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{project?.name || 'Project'}</BreadcrumbPage>
+              <BreadcrumbPage className="max-w-xs truncate">
+                {project?.name || 'Project'}
+              </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -103,7 +108,7 @@ export default function ProjectOverviewPage() {
       </div>
     );
     return () => setHeader(null);
-  }, [setHeader, project, workspaceId, activeTab, setActiveTab]);
+  }, [setHeader, project, workspace, workspaceId, activeTab, setActiveTab]);
 
   useEffect(() => {
     if (project) {

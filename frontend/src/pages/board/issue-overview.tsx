@@ -31,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useBoardLayout } from '@/hooks/use-board-layout';
+import { useWorkspaceById } from '@/hooks/use-workspaces';
 
 export default function IssueOverviewPage() {
   const { workspaceId: workspaceIdStr, issueId: issueIdStr } = useParams<{
@@ -47,6 +48,7 @@ export default function IssueOverviewPage() {
   } = useIssueById(workspaceId, issueId);
   const { data: projects, isLoading: projectsLoading } =
     useProjects(workspaceId);
+  const { workspace } = useWorkspaceById(workspaceId);
   const navigate = useNavigate();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { setHeader } = useBoardLayout();
@@ -68,7 +70,7 @@ export default function IssueOverviewPage() {
       <Breadcrumb className="ml-2">
         <BreadcrumbList>
           <BreadcrumbItem className="hidden md:block">
-            <BreadcrumbPage>Workspace</BreadcrumbPage>
+            <BreadcrumbPage>{workspace?.name || 'Workspace'}</BreadcrumbPage>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>
@@ -82,7 +84,7 @@ export default function IssueOverviewPage() {
       </Breadcrumb>
     );
     return () => setHeader(null);
-  }, [setHeader, issue, workspaceId]);
+  }, [setHeader, issue, workspaceId, workspace]);
 
   useEffect(() => {
     if (issue) {
