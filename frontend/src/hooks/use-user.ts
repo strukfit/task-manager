@@ -26,8 +26,9 @@ export const useUserProfile = () => {
 
   const updateProfile = useMutation({
     mutationFn: (data: EditProfileData) => updateUserProfile(data),
-    onSuccess: data => {
-      queryClient.setQueryData(['user', 'me'], data);
+    onSuccess: updatedUser => {
+      queryClient.setQueryData(['user', 'me'], updatedUser);
+      queryClient.setQueryData(['user'], updatedUser);
     },
   });
 
