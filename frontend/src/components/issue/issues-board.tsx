@@ -11,6 +11,8 @@ import {
   rectIntersection,
   DragStartEvent,
   DragOverlay,
+  TouchSensor,
+  MouseSensor,
 } from '@dnd-kit/core';
 import { toast } from 'sonner';
 import { Columns } from '@/types/board';
@@ -91,6 +93,17 @@ export default function IssuesBoard() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+    useSensor(MouseSensor, {
       activationConstraint: {
         distance: 8,
       },
