@@ -8,11 +8,16 @@ public class ApiResponse<T> {
     private T data;
     private String message;
 
-    public static <T> ApiResponse<T> success(T data) {
+    public static <T> ApiResponse<T> success(T data, String message) {
         ApiResponse<T> response = new ApiResponse<>();
         response.setStatus("success");
         response.setData(data);
+        response.setMessage(message);
         return response;
+    }
+
+    public static <T> ApiResponse<T> success(T data) {
+        return success(data, null);
     }
 
     public static <T> ApiResponse<T> error(String message) {
