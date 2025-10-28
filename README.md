@@ -4,8 +4,6 @@ A full-stack **Task Management System** built with **React (Vite + TypeScript)**
 
 The project is fully containerized using **Docker** and can be launched in both development and production modes with simple `make` commands.
 
----
-
 ## 🚀 Features
 
 - 🧩 Full-stack architecture (React + Spring Boot)
@@ -14,8 +12,6 @@ The project is fully containerized using **Docker** and can be launched in both 
 - 🔐 Environment-based configuration
 - 🗂️ RESTful API for task management
 - 📦 Easy to build, run, and deploy with `Makefile`
-
----
 
 ## ⚙️ Tech Stack
 
@@ -44,8 +40,6 @@ The project is fully containerized using **Docker** and can be launched in both 
 
 - Docker & Docker Compose
 - Makefile for environment management
-
----
 
 ## 🔧 Environment Setup
 
@@ -81,8 +75,6 @@ VITE_API_URL=http://backend:8080
 VITE_PORT=80
 ```
 
----
-
 ## 🧰 Usage
 
 ### 💻 Development Mode
@@ -110,8 +102,6 @@ make prod
 
 This runs the services in detached mode using `docker-compose.yml`.
 
----
-
 ## 🧱 Building Manually
 
 If you prefer to run without Docker:
@@ -130,8 +120,6 @@ cd frontend
 yarn install
 yarn dev
 ```
-
----
 
 ## 📄 License
 
